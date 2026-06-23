@@ -98,6 +98,21 @@ step (catalog archive, env profiles), so pick something short with no spaces
 > creation process in step 3). Capture `b2c.locale` then, or leave the template
 > default (`es-ES`) and adjust if needed.
 
+> **⚠ Assign a Storefront Catalog now, or the storefront won't render.** A site
+> with **no Storefront Catalog assigned** fails to load PLPs/PDPs — and the
+> client catalog doesn't exist until step 10. So the site needs *a* catalog
+> bound before the step-6 visual checkpoint. Have the user, in **BM → Sites →
+> `<siteId>` → Site Configuration**, set:
+> - **Storefront Catalog** → an existing catalog in the sandbox (e.g. a sample
+>   `storefront-catalog-*` that ships with the realm, or any populated one)
+> - **Storefront Inventory List** → an existing inventory list
+>
+> If the sandbox has no catalog to borrow, this can wait until the client
+> catalog is imported in step 10 — but then **warn the user** that PLPs/PDPs
+> will be empty/broken during the step-6 branding preview (Home still renders).
+> Record what was assigned in the step `note`; step 10 re-points these to the
+> client's catalog + inventory list.
+
 > Why manual: the SFCC site-import job **cannot create new sites**. This is a
 > hard platform constraint, not a gap in the tooling.
 
@@ -179,7 +194,9 @@ download real customer assets, override brand tokens.
 >    boot as success).
 > 2. Give the user the local URL and explicitly ask them to open **Home, a PLP,
 >    and a PDP** and confirm the branding looks right (logo, hero, colours,
->    hover states, copy).
+>    hover states, copy). If PLP/PDP are empty or error, that's the **catalog
+>    assignment** (step 2), not the branding — check a Storefront Catalog is
+>    bound to the site; Home should render regardless.
 > 3. **Stop and wait.** Only after the user confirms (or after you iterate on
 >    `content.ts`/`theme.css` to fix what they flag) do you set `status: done`
 >    and persist. If the user wants changes, stay on step 6.
@@ -242,6 +259,13 @@ trigger `sfcc-site-archive-import` → poll until `OK`/`FINISHED`.
 - **Pricing caveat:** `price_book_entries` is deprecated in OCAPI Data on some
   pods (e.g. `zzse-258`). Treat pricing as **best-effort**: if it fails, set the
   step `note` to the blocker and continue — do NOT hard-fail the whole flow.
+- **Re-point the site's bindings to the client catalog.** After the import, the
+  site likely still points at the placeholder catalog assigned in step 2. Have
+  the user (or do it if API-driven) set **BM → Sites → `<siteId>` → Site
+  Configuration → Storefront Catalog / Storefront Inventory List** to the
+  client's freshly-imported catalog + inventory list, then reindex (step 11).
+  Until this is done the storefront shows the placeholder assortment, not the
+  client's.
 - Mark `done` (or `blocked` with a note if only pricing failed).
 
 ### Step 11 — [IA] Reindex + push to MRT `11_reindex_push` → skill `b2c-catalog-onboarding`

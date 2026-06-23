@@ -32,6 +32,10 @@ Default Currency, Taxation, Customer List — **no locale field here**. Site ID 
 case-sensitive and must match the future catalog archive. **Captures now:**
 `b2c.site_id`, `b2c.currency`. **`b2c.locale`** is set later (step 3 / Site
 Preferences), not on this page.
+**⚠ Assign a Storefront Catalog + Inventory List now** (Site Configuration) — a
+site with no catalog won't render PLPs/PDPs, and the client catalog doesn't
+exist until step 10. Bind an existing sandbox catalog as placeholder; step 10
+re-points to the client's.
 *Why manual:* the site-import job cannot create sites — a platform constraint.
 
 ### 3. Storefront creation process in BM `3_storefront_bm`
@@ -104,6 +108,9 @@ site-archive → WebDAV PUT → trigger `sfcc-site-archive-import` → poll to
 **Pricing caveat:** `price_book_entries` is deprecated in OCAPI Data on some
 pods (e.g. `zzse-258`) — treat pricing as best-effort; on failure set the step
 `note` and continue rather than hard-failing.
+**Re-point the site bindings** (Site Configuration → Storefront Catalog +
+Inventory List) from the step-2 placeholder to the client's imported catalog,
+then reindex (step 11).
 
 ### 11. Reindex + push to MRT `11_reindex_push` → `b2c-catalog-onboarding` ⚠
 **Hard gate** (outward-facing). 1) Trigger `SearchReindex` and verify it ran so

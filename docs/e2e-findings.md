@@ -42,3 +42,16 @@ checkpoint a hard stop. Fixes applied:
 **Pattern noticed:** any step with a user-facing artifact (branded storefront,
 catalog preview) needs an explicit "show it and wait" gate. A progress summary
 is not proof the user saw the result. Audit other steps for the same gap.
+
+### Sequencing finding — site needs a Storefront Catalog before the step-6 preview
+
+A site with **no Storefront Catalog assigned** doesn't render PLPs/PDPs. But the
+client's catalog isn't created until step 10 — so the step-6 visual checkpoint
+(open Home/PLP/PDP) would show broken product pages on a brand-new site.
+
+Fix: **step 2 now assigns a placeholder catalog + inventory list** (an existing
+one in the sandbox) via BM → Sites → `<siteId>` → Site Configuration, so the
+storefront renders during branding. **Step 10 re-points** those bindings to the
+client's freshly-imported catalog. Step 6's checkpoint now also tells the agent
+that an empty PLP/PDP is a *catalog-assignment* issue, not a branding failure
+(Home renders regardless).
