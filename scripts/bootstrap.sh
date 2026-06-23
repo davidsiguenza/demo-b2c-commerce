@@ -86,12 +86,19 @@ fi
 # ───── 4. manual step: register the marketplace ─────
 step "Register the marketplace in Claude Code (manual — can't be scripted)"
 cat <<'EOF'
-  In any Claude Code conversation, run:
+  In any Claude Code conversation, run /plugin add-marketplace and paste the
+  HTTPS URL when prompted (NOT the "github owner/repo" shortcut — that uses SSH
+  and fails without an authorized key):
 
-    /plugin add-marketplace github davidsiguenza/demo-b2c-commerce
+    https://github.com/davidsiguenza/demo-b2c-commerce.git
+
+  Then install the three plugins:
+
     /plugin install demo-b2c-commerce@demo-b2c-commerce
+    /plugin install dsp-storefrontnext-demo@demo-b2c-commerce
+    /plugin install b2c-catalog-onboarding@demo-b2c-commerce
 
-  Then start a demo with:
+  Then, from your demo working dir, start the flow with:
 
     "Quiero hacer una demo de B2C Commerce"
 EOF

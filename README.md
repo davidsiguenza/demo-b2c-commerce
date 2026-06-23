@@ -62,24 +62,61 @@ demo-b2c-commerce/
 
 ## Quick start
 
+### 1. Clone + bootstrap (one time per machine)
+
 ```bash
-# 1. Clone
 git clone https://github.com/davidsiguenza/demo-b2c-commerce.git
 cd demo-b2c-commerce
-
-# 2. Bootstrap (links the toolkit CLI, installs BFF deps)
-./scripts/bootstrap.sh
-
-# 3. Register the marketplace in Claude Code (one time)
-#    /plugin add-marketplace github davidsiguenza/demo-b2c-commerce
-#    /plugin install demo-b2c-commerce@demo-b2c-commerce
-
-# 4. From your demo working dir, start the flow:
-#    "Quiero hacer una demo de B2C Commerce"
+./scripts/bootstrap.sh    # links the sfn-toolkit CLI, installs BFF deps
 ```
 
-The master skill creates `demo-state.json` in your working dir on first run and
-**resumes** from the first incomplete step every time you re-invoke it.
+### 2. Register the marketplace in Claude Code (one time)
+
+In any Claude Code conversation, run `/plugin add-marketplace` and — when the
+dialog asks for the marketplace source — paste the **HTTPS URL** (not the
+`owner/repo` shortcut):
+
+```
+https://github.com/davidsiguenza/demo-b2c-commerce.git
+```
+
+> **⚠ Use the HTTPS `.git` URL, not the `github davidsiguenza/demo-b2c-commerce`
+> shortcut.** The shortcut clones over SSH, which fails with
+> `Permission denied (publickey)` / `Host key verification failed` unless you
+> have an SSH key authorized on GitHub. The HTTPS URL works for everyone on a
+> public repo with no credentials. (If you prefer the SSH shortcut, add your
+> `~/.ssh/id_ed25519.pub` to your GitHub account first.)
+
+Then install the three plugins:
+
+```
+/plugin install demo-b2c-commerce@demo-b2c-commerce
+/plugin install dsp-storefrontnext-demo@demo-b2c-commerce
+/plugin install b2c-catalog-onboarding@demo-b2c-commerce
+```
+
+Verify the master skill is available — it should appear as
+`/demo-b2c-commerce:demo-b2c-commerce`.
+
+### 3. Start a demo
+
+From the working directory where you want the demo to live, tell Claude Code:
+
+> **"Quiero hacer una demo de B2C Commerce"**
+
+The master skill creates `demo-state.json` in that directory on first run and
+**resumes** from the first incomplete step every time you re-invoke it. It walks
+the [11 steps](./docs/11-step-flow.md), pausing for your manual steps (sandbox,
+site, SLAS creds) and running the automated ones (branding, Page Designer,
+catalog, MRT push).
+
+### Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| `Host key verification failed` / `Permission denied (publickey)` when adding the marketplace | You used the `github owner/repo` shortcut (SSH). Use the HTTPS `.git` URL above instead. |
+| `sfn-toolkit: command not found` during a branding step | Re-run `./scripts/bootstrap.sh` (it `npm link`s the CLI). |
+| BFF won't boot for catalog steps | It needs `packages/b2c-catalog-onboarding-bff/.env` — copy `.env.example` and fill the sandbox + Account Manager + WebDAV values. |
 
 ---
 
