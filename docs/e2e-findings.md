@@ -55,3 +55,27 @@ storefront renders during branding. **Step 10 re-points** those bindings to the
 client's freshly-imported catalog. Step 6's checkpoint now also tells the agent
 that an empty PLP/PDP is a *catalog-assignment* issue, not a branding failure
 (Home renders regardless).
+
+### Visual-quality finding — recurring branding defects (Bimba y Lola home)
+
+The branded home showed three defects that are common enough to encode as rules:
+1. **Text baked into the hero image** ("REBAJAS ONLINE Y EN TIENDAS") clashing
+   with the component's own overlaid title → text-on-text, illegible.
+2. **Low-contrast text/CTA** — grey "Comprar" and card subtitles unreadable over
+   pale backgrounds.
+3. **A featured card with no image** ("Accesorios" rendered an empty grey box)
+   while siblings had photos.
+
+Fix — added to the `dsp-sfn-demo-branding` skill, both as **prevention** (step 6
+asset-selection + theme rules) and **detection** (a mandatory **visual QA
+checklist** in step 7 the agent must pass before declaring branding done):
+hero images must be text-free; every featured card must have a real image
+(drop the card otherwise); overlay text/CTA must pass contrast (scrim if
+needed); no grey-on-grey; no empty placeholders. The master flow's step-6
+checkpoint runs this checklist before showing the user.
+
+**Pattern noticed:** "quality" defects that recur across clients (text-in-image,
+contrast, missing images) belong in the skill as an explicit pass/fail
+checklist, not as vague "make it look good" guidance. When the user spots a new
+class of defect, add it as a checklist item here so it's caught automatically
+next time.

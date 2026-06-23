@@ -197,7 +197,12 @@ download real customer assets, override brand tokens.
 >    hover states, copy). If PLP/PDP are empty or error, that's the **catalog
 >    assignment** (step 2), not the branding — check a Storefront Catalog is
 >    bound to the site; Home should render regardless.
-> 3. **Stop and wait.** Only after the user confirms (or after you iterate on
+> 3. Before handing it over, **run the branding skill's visual QA checklist**
+>    (`dsp-sfn-demo-branding` step 7) yourself: hero images text-free, every
+>    featured card has a real image, overlay text/CTA pass contrast (no
+>    grey-on-grey, no empty grey placeholder cards). Fix any failure before
+>    showing the user — don't make them catch defects the checklist covers.
+> 4. **Stop and wait.** Only after the user confirms (or after you iterate on
 >    `content.ts`/`theme.css` to fix what they flag) do you set `status: done`
 >    and persist. If the user wants changes, stay on step 6.
 

@@ -128,6 +128,20 @@ b) **Download real assets** from the customer's CDN to
    ```
    Update `content.ts` `imageUrl` fields to `/images/brands/<id>/<filename>`.
 
+   **Asset-selection rules (prevent the common defects up front):**
+   - **Hero images must be text-free.** The hero component overlays its own
+     title/subtitle/CTA, so a background that already contains words produces
+     unreadable text-on-text. Reject promo/campaign images with baked-in copy
+     ("REBAJAS", "-50%", "NEW IN"); pick a clean lifestyle/product shot. If the
+     only option has text, crop it out.
+   - **Every featured card needs a real image.** Never leave a card with an
+     empty/grey placeholder. Source one image per category you include; if you
+     genuinely can't, drop that card rather than shipping an empty one.
+   - **Pick images that give the overlay text contrast.** A hero/card whose text
+     area is mid-grey will need a scrim — prefer images with a darker (for light
+     text) or lighter (for dark text) region where the copy sits, or plan to add
+     a gradient overlay in CSS.
+
 c) **Rewrite `src/extensions/branding/clients/<id>/theme.css`** with proper
    token overrides. **CRITICAL** lessons learned:
 
@@ -146,22 +160,62 @@ c) **Rewrite `src/extensions/branding/clients/<id>/theme.css`** with proper
    - For non-default header styles (e.g. white instead of template's black),
      override the `--header-*` family AND set `--header-logo-filter: none`
      so the logo SVG renders with its native colors.
+   - **Hero/card text contrast:** ensure the overlay copy is readable over the
+     image. If the image is light/busy where text sits, keep or add a scrim
+     (e.g. a `linear-gradient` overlay or a semi-opaque layer) so title,
+     subtitle and CTA all pass contrast. Never ship grey-on-grey text or a
+     low-contrast CTA link.
 
    Always check the brand's **PLP and PDP** visually after — that's where
    incomplete theming bites.
 
-### 7. Validate
+### 7. Validate — visual QA checklist (mandatory before declaring "done")
 ```bash
 pnpm install   # if not already
 pnpm demo:switch <id>
 pnpm dev
 ```
-Open `http://localhost:5173`. Walk through:
-- **Home**: hero, featured cards, footer logo all show the brand
-- **PLP**: hover state on product tiles is neutral, not coloured
-- **PDP**: swatches, "Add to Cart", "Add to Wishlist" all in brand color
+Open `http://localhost:5173` and walk through **every item** below. These are
+the recurring quality defects — treat each as a blocker, not a nice-to-have.
 
-If something is off, iterate on `content.ts` / `theme.css` and refresh.
+**Hero / banner**
+- [ ] **No text baked into the image.** Hero background images must be
+  text-free — the component overlays its own title/subtitle/CTA, so a photo that
+  already contains words ("REBAJAS ONLINE Y EN TIENDAS") produces text-on-text
+  and is illegible. Pick a clean lifestyle/product shot, or move the message
+  entirely into the overlay and use a plain image. If the only good asset has
+  text, crop it out or choose another.
+- [ ] **Overlay text is readable over the image.** Ensure contrast: dark text on
+  light areas / light text on dark areas. If the image is busy, add/keep a
+  scrim (gradient or semi-opaque layer) behind the text. No grey-on-grey.
+- [ ] **CTA buttons are legible and on-brand** — not low-contrast grey on a pale
+  background (the "Comprar" link in the bad example). Primary CTA uses
+  `--primary`; text on it passes contrast.
+
+**Featured cards**
+- [ ] **Every card has an image.** No card may render with an empty/grey
+  placeholder background (the "Accesorios" card in the bad example). If you
+  can't source a real image for a category, either find one, reuse a
+  representative product shot, or drop that card — never ship an empty one.
+- [ ] **Card copy is readable** over its image (scrim or text colour), in the
+  brand's language, with real category names (not "Discover Women").
+
+**PLP**
+- [ ] Hover state on product tiles is a neutral surface, not a vivid brand color.
+- [ ] Product tiles all show an image (ties into catalog QA, step 8).
+
+**PDP**
+- [ ] Swatches, "Add to Cart", "Add to Wishlist" render in the brand color.
+- [ ] Gallery shows multiple views, not a single repeated hero shot.
+
+**General**
+- [ ] Header + footer logo show the brand; logo renders in its native colours
+  (`--header-logo-filter: none` if the logo isn't black).
+- [ ] No leftover template/sample copy or placeholder Lorem text anywhere.
+
+If **any** box fails, iterate on `content.ts` / `theme.css` / the assets and
+refresh. Only when the whole checklist passes is the branding ready to show the
+user for sign-off.
 
 ### 8. Catalog (optional but recommended for client demos)
 
