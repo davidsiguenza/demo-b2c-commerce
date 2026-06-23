@@ -16,6 +16,7 @@
     "client_secret_secret": "SLAS_CLIENT_SECRET"
   },
   "sfn": {
+    "template_source": { "kind": "official-latest" },
     "target_repo_path": "",
     "mrt_project": ""
   },

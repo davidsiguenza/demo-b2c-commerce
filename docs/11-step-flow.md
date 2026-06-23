@@ -53,9 +53,13 @@ the SLAS Admin UI. **Secret hygiene:** raw id/secret go into env vars / the SFN
 ## Phase B — AI builds the storefront (steps 5–8)
 
 ### 5. Deploy the SFN template `5_deploy_sfn` → `dsp-sfn-demo-branding`
-Clone the official Storefront Next template, `sfn-toolkit patch`, bootstrap
-`.env` from the SLAS creds, confirm `pnpm dev` connects to the sandbox.
-**Reads:** `client.*`, `b2c.*`, `slas.*`. **Writes:** `sfn.target_repo_path`.
+**First ask the user the template source** (recorded in `sfn.template_source`):
+(1) **official latest** — clone `SalesforceCommerceCloud/storefront-next-template`
+HEAD; (2) **git-ref** — a specific repo URL + tag/branch; (3) **local-path** —
+reuse an SFN repo already on disk (skip the clone). Then `sfn-toolkit patch`,
+bootstrap `.env` from the SLAS creds, confirm `pnpm dev` connects to the sandbox.
+**Reads:** `client.*`, `b2c.*`, `slas.*`, `sfn.template_source`.
+**Writes:** `sfn.target_repo_path`.
 
 ### 6. Branding + content `6_branding` → `dsp-sfn-demo-branding`
 Research the brand at `client.source_url`; hand-write `content.ts` + `theme.css`;

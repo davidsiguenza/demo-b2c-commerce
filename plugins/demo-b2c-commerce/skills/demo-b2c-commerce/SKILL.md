@@ -120,14 +120,36 @@ to the sandbox. Collect:
 ---
 
 ### Step 5 — [IA] Deploy the SFN template `5_deploy_sfn` → skill `dsp-sfn-demo-branding`
-Invoke the **`dsp-sfn-demo-branding`** skill to clone the official Storefront
-Next template and wire it to the sandbox site using the SLAS credentials.
+First, **ask the user where the SFN template should come from** (AskUserQuestion)
+and record the choice in `sfn.template_source`. Three options:
 
-- Inputs from state: `client.*`, `b2c.*`, `slas.*`.
-- This skill scaffolds the repo (`git clone` template + `sfn-toolkit patch`) and
-  bootstraps `.env` (use `--inherit-env` if the user has an existing working
+1. **Official, latest** (`kind: official-latest`) — clone
+   `SalesforceCommerceCloud/storefront-next-template` at HEAD. The default; use
+   when the user wants the newest template.
+2. **A specific version / repo** (`kind: git-ref`) — the user gives a git URL
+   and a tag/branch/commit (e.g. the official repo at `v0.4.0`, or a fork). Use
+   when they need a pinned/known-good version or a custom base.
+3. **An existing local copy** (`kind: local-path`) — the user points at an SFN
+   repo already on disk (e.g. one produced by the BM storefront-creation process
+   in step 3, or a previous download). Use it in place — do not re-clone. Just
+   confirm it's a valid SFN repo before patching.
+
+Then invoke the **`dsp-sfn-demo-branding`** skill to scaffold from the chosen
+source and wire it to the sandbox site using the SLAS credentials.
+
+- Inputs from state: `client.*`, `b2c.*`, `slas.*`, `sfn.template_source`.
+- Scaffold per the source:
+  - `official-latest`: `git clone <official-template> <target>`
+  - `git-ref`: `git clone <url> <target>` then `git checkout <ref>`
+  - `local-path`: use `sfn.template_source.path` directly as `<target>` (skip
+    the clone)
+  Then `sfn-toolkit upgrade-check` + `sfn-toolkit patch` as the branding skill
+  documents. If `upgrade-check` reports drift, **stop** and surface it — don't
+  force-apply on an unsupported version (especially likely with a pinned ref or
+  a pre-existing local repo).
+- Bootstrap `.env` (use `--inherit-env` if the user has an existing working
   `.env`, else fill from the SLAS creds collected in step 4).
-- **Output to persist:** `sfn.target_repo_path` (the local clone path) — this
+- **Output to persist:** `sfn.target_repo_path` (the local clone/path) — this
   feeds steps 7 and 9.
 - Validate `pnpm dev` boots and connects to the sandbox before marking `done`.
 

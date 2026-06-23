@@ -42,6 +42,17 @@
       "additionalProperties": false,
       "required": ["target_repo_path", "mrt_project"],
       "properties": {
+        "template_source": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Where the SFN template comes from in step 5 (chosen by the user).",
+          "properties": {
+            "kind": { "type": "string", "enum": ["official-latest", "git-ref", "local-path"], "description": "official-latest = clone SalesforceCommerceCloud/storefront-next-template HEAD; git-ref = a specific repo URL + ref; local-path = reuse an existing local SFN repo" },
+            "url": { "type": "string", "description": "Git URL when kind=git-ref (defaults to the official template repo)" },
+            "ref": { "type": "string", "description": "Tag/branch/commit when kind=git-ref (e.g. v0.4.0)" },
+            "path": { "type": "string", "description": "Existing local repo path when kind=local-path" }
+          }
+        },
         "target_repo_path": { "type": "string", "description": "Local path where the SFN repo is cloned (output of step 5, input to 7/9)" },
         "mrt_project": { "type": "string", "description": "Managed Runtime project slug for `npm run push`" }
       }
