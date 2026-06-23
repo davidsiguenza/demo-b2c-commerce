@@ -89,10 +89,19 @@ proves the marketplace is registered; check the sibling plugins via the plugin
 cache (`~/.claude/plugins/cache/<plugin>`), `sfn-toolkit --version`, and the
 BFF's `node_modules`; then instruct **only** the missing piece (and only when
 the step that needs it is reached). On this machine the check revealed
-`b2c-catalog-onboarding` was absent from the cache (published in Phase 2, after
-the marketplace was first registered) while the other two were present — exactly
-the partial-setup case the preflight now handles with a single targeted
+`b2c-catalog-onboarding` was absent (published in Phase 2, after the marketplace
+was first registered) while the other two were present — exactly the
+partial-setup case the preflight now handles with a single targeted
 `/plugin install b2c-catalog-onboarding@demo-b2c-commerce`.
+
+**Correction (same session):** the first version of the preflight checked the
+wrong path — `~/.claude/plugins/cache/<plugin>/`. Plugins installed from a
+marketplace actually live at `cache/<marketplace>/<plugin>/<version>/`, and the
+reliable source of truth is `~/.claude/plugins/installed_plugins.json` →
+`.plugins["<plugin>@<marketplace>"]`. After the user installed the catalog
+plugin, the bare-cache check still reported it missing (false negative); the
+preflight now reads `installed_plugins.json` instead. Verified all three present:
+`demo-b2c-commerce@…`, `dsp-storefrontnext-demo@…`, `b2c-catalog-onboarding@…`.
 
 ### Image-resolution finding — small images stretched into large slots
 

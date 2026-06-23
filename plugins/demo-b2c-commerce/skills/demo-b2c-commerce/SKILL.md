@@ -62,11 +62,18 @@ Helpers live in `scripts/lib/state.mjs` (zero-dep). Schema:
    Check each, silently, and report a short summary:
    - **Sub-skills available?** The fact that *this* skill (`demo-b2c-commerce`)
      ran means the marketplace is registered. Check the two sibling plugins are
-     installed by testing whether their skills resolve — look for them in the
-     plugin cache:
+     installed by looking them up in `installed_plugins.json` by their
+     `<plugin>@<marketplace>` key (the reliable source of truth — the on-disk
+     cache path is `cache/<marketplace>/<plugin>/<version>/`, NOT
+     `cache/<plugin>/`, so don't `ls` for a bare plugin dir):
      ```bash
-     ls ~/.claude/plugins/cache/dsp-storefrontnext-demo 2>/dev/null && echo OK_branding
-     ls ~/.claude/plugins/cache/b2c-catalog-onboarding 2>/dev/null && echo OK_catalog
+     python3 - <<'PY'
+     import json, pathlib
+     p = json.loads(pathlib.Path.home().joinpath('.claude/plugins/installed_plugins.json').read_text())
+     have = set(p.get('plugins', {}))
+     for k in ['dsp-storefrontnext-demo@demo-b2c-commerce', 'b2c-catalog-onboarding@demo-b2c-commerce']:
+         print(('OK ' if k in have else 'MISSING '), k)
+     PY
      ```
    - **Toolkit CLI linked?** `sfn-toolkit --version` (needed for steps 5–9).
    - **BFF deps installed?** `test -d <repo>/packages/b2c-catalog-onboarding-bff/node_modules`
