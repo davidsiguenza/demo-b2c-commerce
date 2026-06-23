@@ -27,8 +27,11 @@ The user has a working B2C Commerce sandbox and can log into Business Manager.
 
 ### 2. Site in the sandbox `2_site`
 The user creates the storefront Site in BM (Administration → Sites → Manage
-Sites → New). Site id is case-sensitive and must match the future catalog
-archive. **Captures:** `b2c.site_id`, `b2c.currency`, `b2c.locale`.
+Sites → New). The **General** page mandatory fields are ID, Name, Time Zone,
+Default Currency, Taxation, Customer List — **no locale field here**. Site ID is
+case-sensitive and must match the future catalog archive. **Captures now:**
+`b2c.site_id`, `b2c.currency`. **`b2c.locale`** is set later (step 3 / Site
+Preferences), not on this page.
 *Why manual:* the site-import job cannot create sites — a platform constraint.
 
 ### 3. Storefront creation process in BM `3_storefront_bm`

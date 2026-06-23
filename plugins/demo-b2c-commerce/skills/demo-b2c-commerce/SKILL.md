@@ -78,9 +78,17 @@ they can log into Business Manager. On confirmation: capture
 
 ### Step 2 — [USER] Site in the sandbox `2_site`
 The user creates the storefront **Site** in BM (Administration → Sites → Manage
-Sites → New). The site id is **case-sensitive** and must match what the catalog
-archive will reference later. Ask for the chosen `site_id`, `currency`, `locale`;
-write them; confirm; `done`.
+Sites → New). On the **General** page the mandatory fields are: **ID, Name,
+Time Zone, Default Currency, Taxation, Customer List** — there is **no locale
+field here**. The site **ID** is **case-sensitive** and is reused in every later
+step (catalog archive, env profiles), so pick something short with no spaces
+(e.g. `bimylol`). Ask for the chosen `site_id` + `currency`; write them; confirm;
+`done`.
+
+> **Locale comes later, not on this page.** The default locale is set after
+> creation (Merchant Tools → Site Preferences → Locales, or via the storefront
+> creation process in step 3). Capture `b2c.locale` then, or leave the template
+> default (`es-ES`) and adjust if needed.
 
 > Why manual: the SFCC site-import job **cannot create new sites**. This is a
 > hard platform constraint, not a gap in the tooling.
