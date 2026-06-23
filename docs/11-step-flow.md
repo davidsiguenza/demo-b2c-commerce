@@ -40,7 +40,11 @@ registration + SCAPI/SLAS scaffolding).
 
 ### 4. Provide SLAS credentials `4_slas_creds`
 The user provides SLAS tenant id + client id/secret so the AI can connect the
-SFN template. **Secret hygiene:** raw id/secret go into env vars / the SFN
+SFN template. The **tenant id** is the **Organization ID** at BM → Administration
+→ Site Development → Salesforce Commerce API Settings (e.g. `f_ecom_zzse_262`),
+usually written without the `f_ecom_` prefix (`zzse_262`) — there is no separate
+"SLAS Administration → Tenant ID" page. The **client id/secret** are created in
+the SLAS Admin UI. **Secret hygiene:** raw id/secret go into env vars / the SFN
 `.env`; only their **names** are stored in `slas.client_id_secret` /
 `slas.client_secret_secret`.
 

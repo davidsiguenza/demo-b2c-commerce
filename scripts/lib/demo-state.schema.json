@@ -32,7 +32,7 @@
       "additionalProperties": false,
       "required": ["tenant_id", "client_id_secret", "client_secret_secret"],
       "properties": {
-        "tenant_id": { "type": "string", "description": "SLAS tenant id (e.g. f_ecom_zzse_258)" },
+        "tenant_id": { "type": "string", "description": "SLAS tenant = the Organization ID at BM -> Administration -> Site Development -> Salesforce Commerce API Settings, usually without the f_ecom_ prefix (e.g. zzse_262)" },
         "client_id_secret": { "type": "string", "description": "NAME of the SLAS client id secret (env var / secret store key) — never the raw value" },
         "client_secret_secret": { "type": "string", "description": "NAME of the SLAS client secret secret — never the raw value" }
       }

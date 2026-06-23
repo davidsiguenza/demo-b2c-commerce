@@ -101,8 +101,15 @@ click. Wait for confirmation; `done`.
 ### Step 4 — [USER] Provide SLAS credentials `4_slas_creds`
 The user provides SLAS credentials so the AI steps can connect the SFN template
 to the sandbox. Collect:
-- `slas.tenant_id`
-- the SLAS **client id** and **client secret**
+- `slas.tenant_id` — this is the **Organization ID** shown at **BM →
+  Administration → Site Development → Salesforce Commerce API Settings**
+  (e.g. `f_ecom_zzse_262`). The SLAS "tenant" is that org id, usually written
+  **without** the `f_ecom_` prefix (`zzse_262`). The same page also shows the
+  **Short Code** (captured in step 1). There is **no** "SLAS Administration →
+  Tenant ID" page — don't send the user looking for one.
+- the SLAS **client id** and **client secret** — created in the **SLAS Admin
+  UI** (or via the SLAS Admin API) for this tenant; not on the BM API Settings
+  page.
 
 > **Secret hygiene (mandatory):** do NOT write the raw client id/secret into
 > `demo-state.json`. Instead, instruct the user to export them as env vars
