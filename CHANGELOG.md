@@ -2,6 +2,24 @@
 
 All notable changes to `demo-b2c-commerce` are documented here.
 
+## [0.3.0] — Phase 2: Extract the catalog BFF
+
+### Added
+- **`b2c-catalog-onboarding-bff`** (`packages/`) — `sfn-marketplace-bff`
+  vendored as a generic catalog-import BFF (33 files, no node_modules/uploads/
+  .env). De-branded (package renamed; MarketStreet/Santander refs generalized;
+  `.env.example` + admin placeholders neutralized). `pnpm typecheck` clean;
+  boots and fail-fasts on missing config (Zod-validated).
+- **Skill `b2c-catalog-onboarding`** (`plugins/`) — drives steps 9–11: acquire
+  product data → flat CSV → BFF (validate/preview/repackage/WebDAV/import) →
+  SearchReindex. Registered as the 3rd plugin in `marketplace.json`.
+- `bootstrap.sh` now installs the BFF deps (no longer a skipped warning).
+
+### Changed
+- `BLOCKERS.md` generalized: `price_book_entries` OCAPI sunset documented as a
+  best-effort limitation of *live per-SKU* price edit only — bulk pricing rides
+  in via the site-archive import. No short-circuit shipped.
+
 ## [0.2.0] — Phase 1: Vendor dsp-storefrontnext-demo
 
 ### Added

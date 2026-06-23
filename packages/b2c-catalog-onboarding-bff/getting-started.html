@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>B2C Catalog Uploader — Get started</title>
+        <style>
+            :root {
+                --bg: #0b0d12;
+                --surface: #14181f;
+                --surface-2: #1c2129;
+                --border: #2a3038;
+                --text: #e8ecf1;
+                --muted: #8a93a3;
+                --primary: #ec0000;
+                --primary-hover: #c10000;
+                --success: #1b8a4f;
+                --warning: #c98a00;
+                --info: #2563eb;
+            }
+            * { box-sizing: border-box; }
+            html, body {
+                margin: 0;
+                padding: 0;
+                background: var(--bg);
+                color: var(--text);
+                font: 15px/1.6 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            }
+            a { color: #93c5fd; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+
+            header.hero {
+                background: linear-gradient(180deg, rgba(236,0,0,0.18) 0%, var(--bg) 100%);
+                padding: 56px 24px 40px;
+                border-bottom: 1px solid var(--border);
+            }
+            header.hero .inner {
+                max-width: 820px;
+                margin: 0 auto;
+            }
+            header.hero .badge {
+                display: inline-block;
+                background: rgba(236,0,0,0.18);
+                color: #fbbac0;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.7px;
+                padding: 3px 10px;
+                border-radius: 999px;
+                margin-bottom: 14px;
+            }
+            header.hero h1 {
+                margin: 0 0 12px;
+                font-size: 30px;
+                letter-spacing: -0.3px;
+            }
+            header.hero p.lead {
+                margin: 0;
+                color: var(--muted);
+                font-size: 16px;
+                max-width: 640px;
+            }
+
+            main {
+                max-width: 820px;
+                margin: 0 auto;
+                padding: 24px;
+            }
+            section {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 22px 24px;
+                margin: 16px 0;
+            }
+            section h2 {
+                margin: 0 0 6px;
+                font-size: 18px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            section h2 .step {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 26px;
+                height: 26px;
+                border-radius: 999px;
+                background: var(--primary);
+                color: #fff;
+                font-size: 13px;
+                font-weight: 700;
+            }
+            section p {
+                margin: 8px 0;
+                color: var(--text);
+            }
+            section .muted {
+                color: var(--muted);
+                font-size: 14px;
+            }
+
+            code {
+                background: var(--surface-2);
+                border: 1px solid var(--border);
+                border-radius: 4px;
+                padding: 1px 6px;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                font-size: 13px;
+            }
+
+            .code-block {
+                position: relative;
+                background: var(--bg);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 14px 16px;
+                margin: 12px 0;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                font-size: 13px;
+                color: var(--text);
+                white-space: pre-wrap;
+                word-break: break-word;
+                overflow-x: auto;
+            }
+            .code-block .copy-btn {
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: var(--surface-2);
+                border: 1px solid var(--border);
+                color: var(--muted);
+                border-radius: 6px;
+                font-size: 11px;
+                padding: 3px 9px;
+                cursor: pointer;
+                font-family: inherit;
+            }
+            .code-block .copy-btn:hover { color: var(--text); }
+
+            ul, ol {
+                margin: 8px 0;
+                padding-left: 22px;
+            }
+            li { margin: 4px 0; }
+
+            table.envtable {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 12px;
+                font-size: 13px;
+            }
+            table.envtable th,
+            table.envtable td {
+                border-bottom: 1px solid var(--border);
+                padding: 8px 10px;
+                text-align: left;
+                vertical-align: top;
+            }
+            table.envtable th {
+                color: var(--muted);
+                font-weight: 600;
+                text-transform: uppercase;
+                font-size: 10px;
+                letter-spacing: 0.5px;
+            }
+
+            .callout {
+                background: var(--surface-2);
+                border-left: 3px solid var(--info);
+                border-radius: 6px;
+                padding: 12px 14px;
+                margin: 14px 0;
+                font-size: 13px;
+            }
+            .callout.warn { border-left-color: var(--warning); }
+            .callout.tip { border-left-color: var(--success); }
+
+            .faq-item {
+                border-top: 1px solid var(--border);
+                padding: 12px 0;
+            }
+            .faq-item:first-of-type { border-top: 0; }
+            .faq-item h3 {
+                margin: 0 0 4px;
+                font-size: 14px;
+                color: #fbbac0;
+            }
+            .faq-item p {
+                margin: 4px 0;
+                font-size: 13px;
+                color: var(--muted);
+            }
+
+            footer {
+                text-align: center;
+                padding: 32px 24px;
+                color: var(--muted);
+                font-size: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <header class="hero">
+            <div class="inner">
+                <span class="badge">B2C Commerce</span>
+                <h1>B2C Catalog Uploader — Get started</h1>
+                <p class="lead">
+                    A tiny BFF that turns a CSV or site-archive ZIP into a B2C Commerce
+                    catalog import — no Business Manager UI gymnastics. This page walks
+                    you through running it locally for the first time.
+                </p>
+            </div>
+        </header>
+
+        <main>
+            <div class="callout">
+                <strong>Tip:</strong> you can read this file by double-clicking
+                <code>getting-started.html</code> in the project folder. No server
+                needed yet.
+            </div>
+
+            <section>
+                <h2><span class="step">1</span> Prerequisites</h2>
+                <p>Install once on your machine:</p>
+                <ul>
+                    <li>
+                        <strong>Node.js 18+</strong> —
+                        <a href="https://nodejs.org" target="_blank" rel="noopener">download from nodejs.org</a>.
+                        Verify with:
+                    </li>
+                </ul>
+                <div class="code-block" data-copy="node -v">node -v</div>
+                <ul>
+                    <li>
+                        <strong>pnpm</strong> — the package manager this project uses. Install with:
+                    </li>
+                </ul>
+                <div class="code-block" data-copy="npm i -g pnpm">npm i -g pnpm</div>
+                <p class="muted">
+                    Plus access to a Salesforce B2C Commerce sandbox: a Business Manager
+                    user, an Account Manager API client, and a WebDAV password.
+                </p>
+            </section>
+
+            <section>
+                <h2><span class="step">2</span> Get the code &amp; configure <code>.env</code></h2>
+                <p>From a terminal:</p>
+                <div class="code-block" data-copy="git clone https://github.com/davidsiguenza/sfn-marketplace-bff.git
+cd sfn-marketplace-bff
+cp .env.example .env">git clone https://github.com/davidsiguenza/sfn-marketplace-bff.git
+cd sfn-marketplace-bff
+cp .env.example .env</div>
+                <p>Open <code>.env</code> and fill in every variable. Where each value lives:</p>
+                <table class="envtable">
+                    <thead>
+                        <tr>
+                            <th>Variable</th>
+                            <th>What it is</th>
+                            <th>Where to find it</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><code>B2C_INSTANCE_HOST</code></td><td>Sandbox host</td><td><code>&lt;sandbox&gt;.dx.commercecloud.salesforce.com</code></td></tr>
+                        <tr><td><code>B2C_TENANT</code></td><td>Tenant id</td><td>Sandbox name with hyphens replaced by underscores (e.g. <code>zzse-258</code> → <code>zzse_258</code>)</td></tr>
+                        <tr><td><code>B2C_ORG_ID</code></td><td>Org id</td><td><code>f_ecom_&lt;tenant&gt;</code></td></tr>
+                        <tr><td><code>B2C_SHORT_CODE</code></td><td>Realm short code</td><td>BM → Administration → Salesforce Commerce API Settings</td></tr>
+                        <tr><td><code>STOREFRONT_CATALOG_ID</code></td><td>Storefront master catalog id</td><td>Merchant Tools → Products and Catalogs</td></tr>
+                        <tr><td><code>DEFAULT_PRICEBOOK_ID</code></td><td>Pricebook the site uses</td><td>Site → Pricebooks</td></tr>
+                        <tr><td><code>DEFAULT_INVENTORY_LIST_ID</code></td><td>Inventory list the site uses</td><td>Site → Inventory</td></tr>
+                        <tr><td><code>AM_CLIENT_ID</code></td><td>Account Manager API client UUID</td><td><a href="https://account.demandware.com" target="_blank" rel="noopener">account.demandware.com</a></td></tr>
+                        <tr><td><code>AM_CLIENT_SECRET</code></td><td>AM client secret</td><td>Same place</td></tr>
+                        <tr><td><code>WEBDAV_USER</code></td><td>BM username (typically your SF email)</td><td>BM</td></tr>
+                        <tr><td><code>WEBDAV_PASSWORD</code></td><td>WebDAV password (per-user)</td><td>BM → Administration → Organization → Users → your user → WebDAV Access</td></tr>
+                        <tr><td><code>REINDEX_JOB_ID</code></td><td>SearchReindex job id (optional)</td><td>BM → Administration → Operations → Jobs</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h2><span class="step">3</span> Connect to the sandbox (one-time)</h2>
+                <ol>
+                    <li>
+                        In <strong>Account Manager</strong> (<a href="https://account.demandware.com" target="_blank" rel="noopener">account.demandware.com</a>) → API Client, create a client with scope
+                        <code>SALESFORCE_COMMERCE_API:&lt;tenant&gt;</code>. Save the client id and secret into <code>.env</code>.
+                    </li>
+                    <li>
+                        In <strong>Business Manager</strong> → Administration → Operations → Jobs:
+                        <ul>
+                            <li>Confirm the import job id is <code>sfcc-site-archive-import</code> (default in most BMs).</li>
+                            <li>Create (if missing) a <code>SearchReindex</code> job for the storefront site, single step
+                                of type <code>SearchReindex</code> with "Product Search Index" + "Content Search Index"
+                                selected. Note the job id and paste it into <code>REINDEX_JOB_ID</code> if you want
+                                near-instant reindex.</li>
+                        </ul>
+                    </li>
+                    <li>
+                        In <strong>BM → Administration → Organization → Users</strong>, click your user, set a
+                        <strong>WebDAV Access</strong> password. That's the value of <code>WEBDAV_PASSWORD</code>.
+                    </li>
+                </ol>
+            </section>
+
+            <section>
+                <h2><span class="step">4</span> Install &amp; run</h2>
+                <div class="code-block" data-copy="pnpm install
+pnpm dev">pnpm install
+pnpm dev</div>
+                <p>
+                    The server boots on <code>http://localhost:3001</code>. Open it in your
+                    browser — you should see the admin UI. The <strong>ⓘ</strong> button in
+                    the header opens the in-app guide and a one-click self-test that hits
+                    every diagnostic endpoint.
+                </p>
+                <div class="callout tip">
+                    <strong>First sanity check:</strong> open
+                    <code>http://localhost:3001/diag/auth</code> and
+                    <code>http://localhost:3001/diag/data-api</code>. Both should return
+                    <code>{ "ok": true, ... }</code>. If either fails, jump to the FAQ
+                    below.
+                </div>
+            </section>
+
+            <section>
+                <h2><span class="step">5</span> Upload your first catalog</h2>
+                <p>
+                    On the home page, drop a <code>.csv</code> or <code>.zip</code> site-archive,
+                    pick (or type) a master catalog id, confirm the storefront catalog /
+                    pricebook / inventory list, and hit <strong>Upload</strong>. The BFF
+                    will preview, you confirm, and the import job runs in the background.
+                </p>
+                <p class="muted">
+                    Need a starter? Click <strong>📥 CSV template</strong> at the top right
+                    of the upload card.
+                </p>
+            </section>
+
+            <section>
+                <h2>It&rsquo;s not working — FAQ</h2>
+
+                <div class="faq-item">
+                    <h3>“pnpm: command not found”</h3>
+                    <p>You skipped step 1. Run <code>npm i -g pnpm</code> and try again.</p>
+                </div>
+                <div class="faq-item">
+                    <h3><code>/diag/auth</code> returns <strong>401 invalid_grant</strong></h3>
+                    <p>The Account Manager client id/secret are wrong, or the client is missing the
+                    <code>SALESFORCE_COMMERCE_API:&lt;tenant&gt;</code> scope. Re-check the client in
+                    <a href="https://account.demandware.com" target="_blank" rel="noopener">account.demandware.com</a>.</p>
+                </div>
+                <div class="faq-item">
+                    <h3><code>/diag/data-api</code> returns 401 / 403</h3>
+                    <p>Your AM client lacks Data API access on the sandbox. Add the
+                    Data API resource access in BM → Administration → Site Development →
+                    Open Commerce API Settings (Data tab) and grant <code>read_write</code> on
+                    <code>/catalogs</code>, <code>/products</code>, <code>/price_books</code>,
+                    <code>/inventory_lists</code>.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>WebDAV upload fails with 401</h3>
+                    <p>Confirm the per-user WebDAV password is set in BM (the regular BM
+                    login password is not enough). Go to BM → Administration → Organization
+                    → Users → your user → <strong>WebDAV Access</strong>.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>“JobNotFound” when triggering the import</h3>
+                    <p>The default import job id is <code>sfcc-site-archive-import</code>. Open
+                    BM → Administration → Operations → Jobs and confirm it exists with that
+                    exact id.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Products imported but the storefront still shows nothing</h3>
+                    <p>SFCC reindexes on a schedule (5–15 min). Set <code>REINDEX_JOB_ID</code>
+                    in <code>.env</code> to the SearchReindex job id from BM, restart the
+                    server, and the next upload will trigger it for you.</p>
+                </div>
+                <div class="faq-item">
+                    <h3>Live price edits return 404</h3>
+                    <p>OCAPI Data does not expose <code>price_book_entries</code> on every sandbox.
+                    Use the regular CSV/ZIP upload path — that always works.</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            Need more? The <strong>ⓘ</strong> button in the running admin shows the same
+            guide plus a live self-test of <code>/health</code>, <code>/diag/auth</code>,
+            <code>/diag/data-api</code> and <code>/diag/edit-targets</code>.
+        </footer>
+
+        <script>
+            // Add a "Copy" button to every .code-block. We pull the literal
+            // command from the data-copy attribute when present (so multi-line
+            // commands don't pick up DOM whitespace artifacts), or fall back to
+            // textContent.
+            document.querySelectorAll('.code-block').forEach((block) => {
+                const text = block.getAttribute('data-copy') || block.textContent;
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.type = 'button';
+                btn.textContent = 'Copy';
+                btn.addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        btn.textContent = 'Copied!';
+                        setTimeout(() => (btn.textContent = 'Copy'), 1200);
+                    } catch {
+                        btn.textContent = 'Copy failed';
+                    }
+                });
+                block.append(btn);
+            });
+        </script>
+    </body>
+</html>

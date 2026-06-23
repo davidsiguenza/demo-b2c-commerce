@@ -30,6 +30,18 @@
       "category": "productivity",
       "strict": false,
       "version": "1.0.0"
+    },
+    {
+      "name": "b2c-catalog-onboarding",
+      "description": "Onboard a product catalog (CSV/ZIP) into a B2C Commerce sandbox — validate, preview, repackage as site-archive, WebDAV upload, import job, and SearchReindex. Drives the master flow's steps 9-11.",
+      "author": {
+        "name": "David Siguenza"
+      },
+      "license": "Apache-2.0",
+      "source": "./plugins/b2c-catalog-onboarding",
+      "category": "productivity",
+      "strict": false,
+      "version": "0.1.0"
     }
   ]
 }

@@ -44,10 +44,10 @@ demo-b2c-commerce/
 ├── plugins/
 │   ├── demo-b2c-commerce/              # ✅ master orchestrator skill
 │   ├── dsp-storefrontnext-demo/        # ✅ branding + PD-import skills
-│   └── b2c-catalog-onboarding/         # ⏳ Phase 2 — catalog onboarding skill
+│   └── b2c-catalog-onboarding/         # ✅ catalog onboarding skill
 ├── packages/
 │   ├── sfn-demo-toolkit/               # ✅ npm-linkable CLI (catalog/branding)
-│   └── b2c-catalog-onboarding-bff/     # ⏳ Phase 2 — CSV/ZIP → site-archive uploader
+│   └── b2c-catalog-onboarding-bff/     # ✅ CSV/ZIP → site-archive uploader
 ├── scripts/
 │   ├── bootstrap.sh                    # links toolkit, installs BFF deps, prints register step
 │   └── lib/{state.mjs, demo-state.schema.json}
@@ -103,9 +103,11 @@ secret-store key), never written into `demo-state.json` in clear.
   and the `sfn-demo-toolkit` CLI vendored in (double-nesting flattened), both
   registered in `marketplace.json`. `bootstrap.sh` links the CLI from
   `packages/sfn-demo-toolkit`.
-- **Phase 2 — Extract the BFF.** Bring in `sfn-marketplace-bff` as the generic
-  `b2c-catalog-onboarding-bff` (de-branded), author the `b2c-catalog-onboarding`
-  skill. Carry over `BLOCKERS.md` without the `price_book_entries` short-circuit.
+- **Phase 2 — ✅ Extract the BFF.** `sfn-marketplace-bff` vendored as the
+  generic `b2c-catalog-onboarding-bff` (de-branded, typecheck clean), with the
+  `b2c-catalog-onboarding` skill driving steps 9–11. `BLOCKERS.md` generalized;
+  pricing is best-effort (bulk via site-archive, no `price_book_entries`
+  short-circuit shipped).
 - **Phase 3 — Wire E2E.** Connect the master skill to the real sub-skills and
   dry-run on a throwaway sandbox.
 - **Phase 4 — Deprecate.** Once E2E passes, archive `sfn-marketplace-bff` and
