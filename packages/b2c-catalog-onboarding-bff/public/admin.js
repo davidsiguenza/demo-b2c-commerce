@@ -1400,7 +1400,7 @@ const ENV_VARS = [
     { key: 'B2C_INSTANCE_HOST', desc: '<sandbox>.dx.commercecloud.salesforce.com', source: 'BM URL' },
     { key: 'B2C_TENANT', desc: '<sandbox> with hyphens replaced by underscores', source: 'BM URL (e.g. zzse-258 → zzse_258)' },
     { key: 'B2C_ORG_ID', desc: 'f_ecom_<tenant>', source: 'derived' },
-    { key: 'B2C_SHORT_CODE', desc: '8-char realm short code', source: 'BM → Administration → Salesforce Commerce API Settings' },
+    { key: 'B2C_SHORT_CODE', desc: '8-char realm short code', source: 'BM → Administration → Site Development → Salesforce Commerce API Settings' },
     { key: 'STOREFRONT_CATALOG_ID', desc: 'Storefront master catalog id', source: 'Merchant Tools → Products and Catalogs' },
     { key: 'DEFAULT_PRICEBOOK_ID', desc: 'Pricebook the site uses', source: 'Site → Pricebooks' },
     { key: 'DEFAULT_INVENTORY_LIST_ID', desc: 'Inventory list the site uses', source: 'Site → Inventory' },

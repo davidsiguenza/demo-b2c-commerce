@@ -96,7 +96,7 @@ WebDAV credentials are your BM user + a per-user WebDAV password set in BM
 | `B2C_INSTANCE_HOST` | yes | `<sandbox>.dx.commercecloud.salesforce.com` |
 | `B2C_TENANT` | yes | `<sandbox>` with hyphens replaced by underscores |
 | `B2C_ORG_ID` | yes | `f_ecom_<tenant>` |
-| `B2C_SHORT_CODE` | yes | 8-char realm short code (BM → Administration → Salesforce Commerce API Settings) |
+| `B2C_SHORT_CODE` | yes | 8-char realm short code (BM → Administration → Site Development → Salesforce Commerce API Settings) |
 | `STOREFRONT_CATALOG_ID` | yes | The storefront master catalog id (cross-publish target) |
 | `DEFAULT_PRICEBOOK_ID` | yes | Pricebook the site uses |
 | `DEFAULT_INVENTORY_LIST_ID` | yes | Inventory list the site uses |

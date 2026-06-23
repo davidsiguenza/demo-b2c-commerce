@@ -71,6 +71,11 @@ Print this checklist, then **ask the user to confirm** the sandbox is up and
 they can log into Business Manager. On confirmation: capture
 `b2c.instance_url` + `b2c.shortcode`, set status `done`, persist.
 
+> The **shortcode** is the 8-char alphanumeric value at **BM → Administration →
+> Site Development → Salesforce Commerce API Settings** (it is NOT under Global
+> Preferences). `instance_url` is the BM host
+> (`<sandbox>.dx.commercecloud.salesforce.com`).
+
 ### Step 2 — [USER] Site in the sandbox `2_site`
 The user creates the storefront **Site** in BM (Administration → Sites → Manage
 Sites → New). The site id is **case-sensitive** and must match what the catalog

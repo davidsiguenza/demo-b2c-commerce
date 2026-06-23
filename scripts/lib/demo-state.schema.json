@@ -21,7 +21,7 @@
       "required": ["instance_url", "shortcode", "site_id", "currency", "locale"],
       "properties": {
         "instance_url": { "type": "string", "description": "<sandbox>.dx.commercecloud.salesforce.com" },
-        "shortcode": { "type": "string", "description": "8-char realm short code (BM -> Salesforce Commerce API Settings)" },
+        "shortcode": { "type": "string", "description": "8-char realm short code (BM -> Administration -> Site Development -> Salesforce Commerce API Settings)" },
         "site_id": { "type": "string", "description": "Storefront site id created in BM (case-sensitive)" },
         "currency": { "type": "string", "description": "ISO currency, e.g. EUR" },
         "locale": { "type": "string", "description": "Default locale, e.g. es-ES" }
