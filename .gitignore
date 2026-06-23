@@ -1,0 +1,16 @@
+# Runtime state — created by the master skill in the working dir. Holds
+# environment-specific ids and secret NAMES; never commit it.
+demo-state.json
+
+# Dependencies
+node_modules/
+packages/*/node_modules/
+
+# Env / secrets
+.env
+.env.local
+*.local
+
+# OS / editor
+.DS_Store
+*.log

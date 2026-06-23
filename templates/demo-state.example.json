@@ -1,0 +1,35 @@
+{
+  "client": {
+    "name": "",
+    "source_url": ""
+  },
+  "b2c": {
+    "instance_url": "",
+    "shortcode": "",
+    "site_id": "",
+    "currency": "EUR",
+    "locale": "es-ES"
+  },
+  "slas": {
+    "tenant_id": "",
+    "client_id_secret": "SLAS_CLIENT_ID",
+    "client_secret_secret": "SLAS_CLIENT_SECRET"
+  },
+  "sfn": {
+    "target_repo_path": "",
+    "mrt_project": ""
+  },
+  "steps": {
+    "1_sandbox":        { "owner": "user", "status": "pending" },
+    "2_site":           { "owner": "user", "status": "pending" },
+    "3_storefront_bm":  { "owner": "user", "status": "pending" },
+    "4_slas_creds":     { "owner": "user", "status": "pending" },
+    "5_deploy_sfn":     { "owner": "ia",   "status": "pending", "skill": "dsp-sfn-demo-branding" },
+    "6_branding":       { "owner": "ia",   "status": "pending", "skill": "dsp-sfn-demo-branding" },
+    "7_pd_template":    { "owner": "ia",   "status": "pending", "skill": "dsp-sfn-demo-pd-import" },
+    "8_pd_content":     { "owner": "ia",   "status": "pending", "skill": "dsp-sfn-demo-pd-import" },
+    "9_catalog_build":  { "owner": "ia",   "status": "pending", "skill": "b2c-catalog-onboarding" },
+    "10_catalog_upload":{ "owner": "ia",   "status": "pending", "skill": "b2c-catalog-onboarding" },
+    "11_reindex_push":  { "owner": "ia",   "status": "pending", "skill": "b2c-catalog-onboarding" }
+  }
+}

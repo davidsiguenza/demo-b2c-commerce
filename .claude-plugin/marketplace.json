@@ -1,0 +1,23 @@
+{
+  "name": "demo-b2c-commerce",
+  "description": "Meta-orchestrator for building end-to-end branded Salesforce B2C Commerce (Storefront Next) demos — one guided flow from sandbox to MRT.",
+  "version": "0.1.0",
+  "owner": {
+    "name": "David Siguenza",
+    "email": "mccc.gpt@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "demo-b2c-commerce",
+      "description": "Master skill that guides an 11-step B2C Commerce demo flow, alternating user/AI turns: deploy SFN, branding, Page Designer, catalog, and push to MRT.",
+      "author": {
+        "name": "David Siguenza"
+      },
+      "license": "Apache-2.0",
+      "source": "./plugins/demo-b2c-commerce",
+      "category": "productivity",
+      "strict": false,
+      "version": "0.1.0"
+    }
+  ]
+}

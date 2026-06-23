@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "demo-state.json",
+  "description": "State machine for the Demo B2C Commerce 11-step orchestrator. Lives in the working dir, gitignored. Secrets are referenced by name, never stored in clear.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["client", "b2c", "slas", "sfn", "steps"],
+  "properties": {
+    "client": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "source_url"],
+      "properties": {
+        "name": { "type": "string", "description": "Display name of the demo client, e.g. 'Nnormal'" },
+        "source_url": { "type": "string", "description": "Public website used as branding + catalog source, e.g. 'https://www.nnormal.com'" }
+      }
+    },
+    "b2c": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["instance_url", "shortcode", "site_id", "currency", "locale"],
+      "properties": {
+        "instance_url": { "type": "string", "description": "<sandbox>.dx.commercecloud.salesforce.com" },
+        "shortcode": { "type": "string", "description": "8-char realm short code (BM -> Salesforce Commerce API Settings)" },
+        "site_id": { "type": "string", "description": "Storefront site id created in BM (case-sensitive)" },
+        "currency": { "type": "string", "description": "ISO currency, e.g. EUR" },
+        "locale": { "type": "string", "description": "Default locale, e.g. es-ES" }
+      }
+    },
+    "slas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenant_id", "client_id_secret", "client_secret_secret"],
+      "properties": {
+        "tenant_id": { "type": "string", "description": "SLAS tenant id (e.g. f_ecom_zzse_258)" },
+        "client_id_secret": { "type": "string", "description": "NAME of the SLAS client id secret (env var / secret store key) — never the raw value" },
+        "client_secret_secret": { "type": "string", "description": "NAME of the SLAS client secret secret — never the raw value" }
+      }
+    },
+    "sfn": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_repo_path", "mrt_project"],
+      "properties": {
+        "target_repo_path": { "type": "string", "description": "Local path where the SFN repo is cloned (output of step 5, input to 7/9)" },
+        "mrt_project": { "type": "string", "description": "Managed Runtime project slug for `npm run push`" }
+      }
+    },
+    "steps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "1_sandbox", "2_site", "3_storefront_bm", "4_slas_creds",
+        "5_deploy_sfn", "6_branding", "7_pd_template", "8_pd_content",
+        "9_catalog_build", "10_catalog_upload", "11_reindex_push"
+      ],
+      "patternProperties": {
+        "^[0-9]+_[a-z_]+$": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["owner", "status"],
+          "properties": {
+            "owner": { "type": "string", "enum": ["user", "ia"] },
+            "status": { "type": "string", "enum": ["pending", "in_progress", "done", "skipped", "blocked"] },
+            "skill": { "type": "string", "description": "Sub-skill the master invokes for ia-owned steps" },
+            "note": { "type": "string", "description": "Free-form note (e.g. blocker reason, output path)" }
+          }
+        }
+      }
+    }
+  }
+}
