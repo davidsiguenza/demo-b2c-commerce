@@ -52,3 +52,14 @@ and ask only for what's missing.
    Commerce") against zzse-262.
 2. Validate the catalog leg (steps 9–11) for the first time.
 3. Capture any new corrections in `e2e-findings.md`.
+
+## Backlog (planned, not yet built)
+
+Optional add-on steps toward Data Cloud activation — reuse the catalog artifact
+and the MRT-deployed site rather than a parallel pipeline:
+
+- **Catalog → Data Cloud export** mapped to the standard **Goods Product**
+  entity (Product DMO), so the generated catalog also feeds Data Cloud
+  (likely a new optional step after catalog upload).
+- **Sitemap generation** for the SFN site so the storefront streams ecommerce
+  engagement events into Data Cloud (likely after the MRT deploy).
