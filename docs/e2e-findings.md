@@ -79,3 +79,13 @@ contrast, missing images) belong in the skill as an explicit pass/fail
 checklist, not as vague "make it look good" guidance. When the user spots a new
 class of defect, add it as a checklist item here so it's caught automatically
 next time.
+
+### Image-resolution finding — small images stretched into large slots
+
+A small image/icon (e.g. a 32–64px icon or a thumbnail) wired into a full-width
+banner or card slot renders blurry/pixelated. Added objective size thresholds
+to `dsp-sfn-demo-branding` (prevention + checklist): hero ≥ 1600px wide, card
+≥ 800px, logo prefer SVG / ≥ 2× rendered size. Verify with
+`sips -g pixelWidth -g pixelHeight <file>`; never upscale — pull a larger source
+from the brand CDN (bump the `w=`/size token), and never use an icon/sprite/
+favicon URL as a banner image.

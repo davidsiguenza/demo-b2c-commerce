@@ -141,6 +141,17 @@ b) **Download real assets** from the customer's CDN to
      area is mid-grey will need a scrim — prefer images with a darker (for light
      text) or lighter (for dark text) region where the copy sits, or plan to add
      a gradient overlay in CSS.
+   - **Mind resolution — never stretch a small image into a large slot.** A
+     32–64px icon, logo, or thumbnail blown up to a full-width banner looks
+     blurry/pixelated. Check the real pixel dimensions of each downloaded asset
+     (`sips -g pixelWidth -g pixelHeight <file>` on macOS, or `file <file>`) and
+     match them to the slot:
+       - **Hero / full-width banner:** ≥ 1600px wide (ideally 1920–2200).
+       - **Featured card:** ≥ 800px wide.
+       - **Logo:** prefer SVG; if raster, ≥ 2× its rendered size for retina.
+     If the only asset for a slot is small, find a larger source (the brand's
+     CDN usually serves multiple sizes — bump the `w=`/size token in the URL),
+     don't upscale. Never wire an icon/sprite/favicon URL into a banner field.
 
 c) **Rewrite `src/extensions/branding/clients/<id>/theme.css`** with proper
    token overrides. **CRITICAL** lessons learned:
@@ -191,12 +202,17 @@ the recurring quality defects — treat each as a blocker, not a nice-to-have.
 - [ ] **CTA buttons are legible and on-brand** — not low-contrast grey on a pale
   background (the "Comprar" link in the bad example). Primary CTA uses
   `--primary`; text on it passes contrast.
+- [ ] **Hero image is high enough resolution** (≥ 1600px wide) — not a small
+  image/icon stretched to full width (blurry/pixelated). Verify with
+  `sips -g pixelWidth <file>`.
 
 **Featured cards**
 - [ ] **Every card has an image.** No card may render with an empty/grey
   placeholder background (the "Accesorios" card in the bad example). If you
   can't source a real image for a category, either find one, reuse a
   representative product shot, or drop that card — never ship an empty one.
+- [ ] **Card image is large enough** (≥ 800px wide) — no upscaled thumbnails or
+  icons used as card art.
 - [ ] **Card copy is readable** over its image (scrim or text colour), in the
   brand's language, with real category names (not "Discover Women").
 
