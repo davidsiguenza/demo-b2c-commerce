@@ -1,0 +1,147 @@
+<?xml version='1.0' encoding='utf-8'?>
+<!--
+  Storefront Next Page Designer — homepage template
+
+  Replace before importing:
+    - LIBRARY_ID:  the library ID assigned to your site (BM > Content > Libraries)
+                   e.g. mayoral-SharedLibrary, NOT mayoral
+    - SITE_ID:     the site ID (BM > Sites)
+                   e.g. mayoral
+    - PREFIX:      a unique prefix for your content IDs to avoid clashes
+                   e.g. mayoral-
+
+  Notes:
+    - Region is encoded in `type` as `<parentType>.<regionId>` (page.homePage.main, etc.)
+    - Image attributes need an OBJECT: {"path": "..."} or {"url": "..."}
+    - Category attributes are STRINGS with the category ID
+    - All attribute names match exactly the JSON definitions in
+      cartridges/<cartridge>/cartridge/experience/components/**/*.json
+-->
+<library xmlns="http://www.demandware.com/xml/impex/library/2006-10-31" library-id="LIBRARY_ID">
+
+    <!-- ============================================================
+         HOME PAGE — page.homePage with regions: headerbanner + main
+    ============================================================ -->
+    <content content-id="homepage">
+        <display-name xml:lang="x-default">Home Page</display-name>
+        <description xml:lang="x-default">Branded homepage</description>
+        <type>page.homePage</type>
+        <config>{
+            "visibility" : [ ]
+            }</config>
+        <visibility-mode xml:lang="x-default">visible</visibility-mode>
+        <online-flag>false</online-flag>
+        <online-flag site-id="SITE_ID">true</online-flag>
+        <searchable-flag>false</searchable-flag>
+        <searchable-flag site-id="SITE_ID">false</searchable-flag>
+        <page-attributes/>
+        <content-links>
+            <!-- IMPORTANT: type encodes the region as page.homePage.<region> -->
+            <content-link content-id="PREFIX-hero-carousel" type="page.homePage.headerbanner">
+                <position>1.0</position>
+            </content-link>
+            <content-link content-id="PREFIX-popular-categories" type="page.homePage.main">
+                <position>1.0</position>
+            </content-link>
+        </content-links>
+        <sitemap-included-flag site-id="SITE_ID">false</sitemap-included-flag>
+    </content>
+
+    <!-- ============================================================
+         HERO CAROUSEL — Layout component with `slides` region
+    ============================================================ -->
+    <content content-id="PREFIX-hero-carousel">
+        <type>component.Layout.heroCarousel</type>
+        <config>{
+            "visibility" : [ ]
+            }</config>
+        <data xml:lang="x-default">{
+            "autoPlay" : true,
+            "autoPlayInterval" : 5000,
+            "showDots" : true,
+            "showNavigation" : true
+            }</data>
+        <online-flag>true</online-flag>
+        <online-flag site-id="SITE_ID">true</online-flag>
+        <page-attributes/>
+        <content-links>
+            <content-link content-id="PREFIX-hero-slide-1" type="component.Layout.heroCarousel.slides">
+                <position>1.0</position>
+            </content-link>
+            <content-link content-id="PREFIX-hero-slide-2" type="component.Layout.heroCarousel.slides">
+                <position>2.0</position>
+            </content-link>
+            <content-link content-id="PREFIX-hero-slide-3" type="component.Layout.heroCarousel.slides">
+                <position>3.0</position>
+            </content-link>
+        </content-links>
+    </content>
+
+    <!-- HERO SLIDE 1 -->
+    <content content-id="PREFIX-hero-slide-1">
+        <type>component.Content.hero</type>
+        <config>{
+            "visibility" : [ ]
+            }</config>
+        <data xml:lang="x-default">{
+            "title" : "Slide 1 title",
+            "titleTypography" : "Heading 1",
+            "titleColor" : "#FFFFFF",
+            "subtitle" : "Slide 1 subtitle",
+            "subtitleTypography" : "Heading 4",
+            "subtitleColor" : "#FFFFFF",
+            "imageUrl" : {"path": "/images/brands/CLIENT/hero-1.jpg", "focal_point": {"x": 0.5, "y": 0.5}},
+            "imageAlt" : "Slide 1 alt",
+            "ctaText" : "Shop now",
+            "ctaLink" : "/category/root",
+            "buttonStyle" : "Primary",
+            "overlayPosition" : "Middle Center",
+            "overlayAlignment" : "center",
+            "height" : "lg"
+            }</data>
+        <online-flag>true</online-flag>
+        <online-flag site-id="SITE_ID">true</online-flag>
+        <page-attributes/>
+    </content>
+
+    <!-- Repeat for slide 2 and 3 with different content-id/data -->
+
+    <!-- ============================================================
+         POPULAR CATEGORIES — Layout component with `categories` region
+    ============================================================ -->
+    <content content-id="PREFIX-popular-categories">
+        <type>component.Layout.popularCategories</type>
+        <config>{
+            "visibility" : [ ]
+            }</config>
+        <data xml:lang="x-default">{
+            "title" : "Our Categories",
+            "subtitle" : "Browse by category",
+            "parentId" : "root"
+            }</data>
+        <online-flag>true</online-flag>
+        <online-flag site-id="SITE_ID">true</online-flag>
+        <page-attributes/>
+        <content-links>
+            <content-link content-id="PREFIX-cat-1" type="component.Layout.popularCategories.categories">
+                <position>1.0</position>
+            </content-link>
+            <!-- Add more category cards as needed -->
+        </content-links>
+    </content>
+
+    <!-- CATEGORY CARD -->
+    <content content-id="PREFIX-cat-1">
+        <type>component.Content.popularCategory</type>
+        <config>{
+            "visibility" : [ ]
+            }</config>
+        <data xml:lang="x-default">{
+            "category" : "newborn"
+            }</data>
+        <online-flag>true</online-flag>
+        <online-flag site-id="SITE_ID">true</online-flag>
+        <page-attributes/>
+    </content>
+
+</library>

@@ -1,0 +1,53 @@
+/* Default client — inherits all tokens from src/theme/. No overrides.
+ *
+ * When you create a new client (e.g. clients/<id>/theme.css), the recommended
+ * tokens to override are below. See docs/CLAUDE-BRANDING-PLAYBOOK.md for the
+ * full mapping (which token controls which UI surface).
+ *
+ * Recommended override scope:
+ *
+ * :root[data-brand='<id>'] {
+ *     // Core surfaces & text — keep neutral; only override if your brand's
+ *     // body background is not white.
+ *     --background: #ffffff;
+ *     --foreground: <brand text color>;
+ *
+ *     // Brand-aware accents — these drive almost all coloured CTAs.
+ *     --primary: <brand primary>;
+ *     --primary-foreground: <readable on primary>;
+ *     --ring: <brand primary>;
+ *     --focus: <brand primary @ 40%>;
+ *
+ *     // IMPORTANT: --accent in this template is the hover/highlight surface
+ *     // (used by outline buttons, dropdown items, badges, collapsibles).
+ *     // Keep it as a low-saturation neutral. DO NOT put a vivid brand color
+ *     // here or every hover will look like an error.
+ *     --accent: <neutral, e.g. #f6f5f4>;
+ *     --accent-foreground: <brand text>;
+ *
+ *     // Brand secondary CTAs ("Write a review", utility buttons).
+ *     --brand-primary: <brand primary>;
+ *     --brand-primary-hover: <slightly darker primary>;
+ *
+ *     // PDP variant selectors (color and size swatches).
+ *     --swatch-bg-selected: <brand primary>;
+ *     --swatch-border-selected: <brand primary>;
+ *     --swatch-text-selected: <readable on primary>;
+ *     --swatch-color-border-hover: <brand primary>;
+ *
+ *     // Mobile menu and faceted filters.
+ *     --sidebar-primary: <brand primary>;
+ *     --sidebar-primary-foreground: <readable on primary>;
+ *     --sidebar-ring: <brand primary>;
+ *
+ *     // Header — override only if the brand uses a non-default header style
+ *     // (e.g. white header instead of the template's black one).
+ *     // --header-background: #ffffff;
+ *     // --header-foreground: <brand text>;
+ *     // --header-logo-filter: none;   // disable the invert if your logo
+ *     //                               // already has its own colors
+ * }
+ */
+:root[data-brand='default'] {
+    /* placeholder; add overrides per client. */
+}

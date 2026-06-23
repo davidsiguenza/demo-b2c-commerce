@@ -42,11 +42,11 @@ version skew and a single `git clone` gets everything.
 demo-b2c-commerce/
 ├── .claude-plugin/marketplace.json     # lists the plugins below
 ├── plugins/
-│   ├── demo-b2c-commerce/              # ✅ master orchestrator skill (this repo)
-│   ├── dsp-storefrontnext-demo/        # ⏳ Phase 1 — branding + PD-import skills
+│   ├── demo-b2c-commerce/              # ✅ master orchestrator skill
+│   ├── dsp-storefrontnext-demo/        # ✅ branding + PD-import skills
 │   └── b2c-catalog-onboarding/         # ⏳ Phase 2 — catalog onboarding skill
 ├── packages/
-│   ├── sfn-demo-toolkit/               # ⏳ Phase 1 — npm-linkable CLI (catalog/branding)
+│   ├── sfn-demo-toolkit/               # ✅ npm-linkable CLI (catalog/branding)
 │   └── b2c-catalog-onboarding-bff/     # ⏳ Phase 2 — CSV/ZIP → site-archive uploader
 ├── scripts/
 │   ├── bootstrap.sh                    # links toolkit, installs BFF deps, prints register step
@@ -99,9 +99,10 @@ secret-store key), never written into `demo-state.json` in clear.
 ## Roadmap
 
 - **Phase 0 — ✅ Scaffold.** Master skill, state machine, bootstrap, docs.
-- **Phase 1 — Vendor `dsp-storefrontnext-demo`.** Move the branding + PD-import
-  skills and the `sfn-demo-toolkit` CLI in (flattening the old double-nesting),
-  add both to `marketplace.json`.
+- **Phase 1 — ✅ Vendor `dsp-storefrontnext-demo`.** Branding + PD-import skills
+  and the `sfn-demo-toolkit` CLI vendored in (double-nesting flattened), both
+  registered in `marketplace.json`. `bootstrap.sh` links the CLI from
+  `packages/sfn-demo-toolkit`.
 - **Phase 2 — Extract the BFF.** Bring in `sfn-marketplace-bff` as the generic
   `b2c-catalog-onboarding-bff` (de-branded), author the `b2c-catalog-onboarding`
   skill. Carry over `BLOCKERS.md` without the `price_book_entries` short-circuit.

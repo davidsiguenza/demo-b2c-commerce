@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Storefront Next Page Designer — site-private library template
+
+  Use when `b2c content list --library <siteId> --site-library --tree` works
+  (the library has the same ID as the site and is not assigned anywhere else).
+
+  Archive path: sites/<SITE_ID>/library/library.xml
+
+  Replace before importing:
+    - SITE_ID:  the site ID (also the library ID for site-private libs)
+                e.g. bimbaylola
+    - PREFIX:   a unique prefix for your content IDs to avoid clashes
+                e.g. byl-
+    - CLIENT:   the brand folder under public/images/brands/
+                e.g. bimbaylola
+
+  Notes:
+    - <library> has NO library-id attribute (unlike shared libraries)
+    - <online-flag> is a plain boolean — NO `site-id` attribute
+    - Region is encoded in `type` as `<parentType>.<regionId>`
+    - Image attributes need an OBJECT: {"path": "..."} or {"url": "..."}
+    - All attribute names match the JSON definitions in
+      cartridges/<cartridge>/cartridge/experience/components/**/*.json
+-->
+<library xmlns="http://www.demandware.com/xml/impex/library/2006-10-31">
+
+    <!-- ============================================================
+         HOME PAGE — page.homePage with regions: headerbanner + main
+    ============================================================ -->
+    <content content-id="homepage">
+        <display-name xml:lang="x-default">Home Page</display-name>
+        <description xml:lang="x-default">Branded homepage</description>
+        <type>page.homePage</type>
+        <visibility-mode xml:lang="x-default">visible</visibility-mode>
+        <online-flag>true</online-flag>
+        <searchable-flag>false</searchable-flag>
+        <page-attributes/>
+        <content-links>
+            <content-link content-id="PREFIX-hero-carousel" type="page.homePage.headerbanner">
+                <position>1.0</position>
+            </content-link>
+            <content-link content-id="PREFIX-categories-grid" type="page.homePage.main">
+                <position>1.0</position>
+            </content-link>
+        </content-links>
+    </content>
+
+    <!-- ============================================================
+         HERO CAROUSEL — Layout component with `slides` region
+    ============================================================ -->
+    <content content-id="PREFIX-hero-carousel">
+        <type>component.Layout.heroCarousel</type>
+        <data xml:lang="x-default">{
+  "autoPlay": true,
+  "autoPlayInterval": 6000,
+  "showDots": true,
+  "showNavigation": true
+}</data>
+        <online-flag>true</online-flag>
+        <page-attributes/>
+        <content-links>
+            <content-link content-id="PREFIX-hero-slide-1" type="component.Layout.heroCarousel.slides">
+                <position>1.0</position>
+            </content-link>
+            <content-link content-id="PREFIX-hero-slide-2" type="component.Layout.heroCarousel.slides">
+                <position>2.0</position>
+            </content-link>
+        </content-links>
+    </content>
+
+    <!-- HERO SLIDE 1 -->
+    <content content-id="PREFIX-hero-slide-1">
+        <type>component.Content.hero</type>
+        <data xml:lang="x-default">{
+  "title": "Slide 1 title",
+  "titleTypography": "Heading 2",
+  "titleColor": "#FFFFFF",
+  "subtitle": "Slide 1 subtitle",
+  "subtitleTypography": "Paragraph",
+  "subtitleColor": "#FFFFFF",
+  "imageUrl": {"path": "/images/brands/CLIENT/hero-1.jpg", "focal_point": {"x": 0.5, "y": 0.5}},
+  "imageAlt": "Slide 1 alt",
+  "ctaText": "Shop now",
+  "ctaLink": "/category/root",
+  "buttonStyle": "Primary",
+  "overlayPosition": "Bottom Left",
+  "overlayAlignment": "left",
+  "height": "full"
+}</data>
+        <online-flag>true</online-flag>
+        <page-attributes/>
+    </content>
+
+    <!-- HERO SLIDE 2 -->
+    <content content-id="PREFIX-hero-slide-2">
+        <type>component.Content.hero</type>
+        <data xml:lang="x-default">{
+  "title": "Slide 2 title",
+  "titleTypography": "Heading 2",
+  "titleColor": "#FFFFFF",
+  "subtitle": "Slide 2 subtitle",
+  "subtitleTypography": "Paragraph",
+  "subtitleColor": "#FFFFFF",
+  "imageUrl": {"path": "/images/brands/CLIENT/hero-2.jpg", "focal_point": {"x": 0.5, "y": 0.5}},
+  "imageAlt": "Slide 2 alt",
+  "ctaText": "Discover",
+  "ctaLink": "/category/featured",
+  "buttonStyle": "Primary",
+  "overlayPosition": "Middle Center",
+  "overlayAlignment": "center",
+  "height": "full"
+}</data>
+        <online-flag>true</online-flag>
+        <page-attributes/>
+    </content>
+
+    <!-- ============================================================
+         CATEGORIES GRID — Layout.grid with 4 contentCard children
+         Use this pattern when featuredCards.primary[] in content.ts
+         has curated images/copy (popularCategory only takes a category ID).
+    ============================================================ -->
+    <content content-id="PREFIX-categories-grid">
+        <type>component.Layout.grid</type>
+        <data xml:lang="x-default">{
+  "columns": "4",
+  "maxWidth": "2xl"
+}</data>
+        <online-flag>true</online-flag>
+        <page-attributes/>
+        <content-links>
+            <content-link content-id="PREFIX-card-1" type="component.Layout.grid.column_1">
+                <position>1.0</position>
+            </content-link>
+            <content-link content-id="PREFIX-card-2" type="component.Layout.grid.column_2">
+                <position>1.0</position>
+            </content-link>
+            <content-link content-id="PREFIX-card-3" type="component.Layout.grid.column_3">
+                <position>1.0</position>
+            </content-link>
+            <content-link content-id="PREFIX-card-4" type="component.Layout.grid.column_4">
+                <position>1.0</position>
+            </content-link>
+        </content-links>
+    </content>
+
+    <!-- CATEGORY CARD 1 (Content.contentCard) -->
+    <content content-id="PREFIX-card-1">
+        <type>component.Content.contentCard</type>
+        <data xml:lang="x-default">{
+  "title": "BAGS",
+  "description": "Icons and new silhouettes.",
+  "imageUrl": {"path": "/images/brands/CLIENT/category-bags.jpg", "focal_point": {"x": 0.5, "y": 0.5}},
+  "imageAlt": "Bags category",
+  "buttonText": "SHOP",
+  "buttonLink": "/category/bags",
+  "showBackground": false,
+  "showBorder": false
+}</data>
+        <online-flag>true</online-flag>
+        <page-attributes/>
+    </content>
+
+    <!-- Repeat content-id="PREFIX-card-2..4" with different titles/images -->
+
+</library>

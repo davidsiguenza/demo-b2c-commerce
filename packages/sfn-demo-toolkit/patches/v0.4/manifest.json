@@ -1,0 +1,136 @@
+{
+    "sfnVersion": "0.4.x",
+    "supportedRuntimeVersions": ["0.4.0", "0.4.1", "0.4.2"],
+    "extensionId": "SFDC_EXT_BRANDING",
+    "addedDirs": [
+        {
+            "from": "extensions/branding",
+            "to": "src/extensions/branding"
+        }
+    ],
+    "addedFiles": [
+        { "from": "scripts/demo-switch.mjs", "to": "scripts/demo-switch.mjs", "mode": "0755" },
+        { "from": "env-profiles/default.env.example", "to": ".env.profiles/default.env.example" }
+    ],
+    "patchedFiles": [
+        {
+            "path": "src/extensions/config.json",
+            "op": "merge-json",
+            "merge": {
+                "extensions": {
+                    "SFDC_EXT_BRANDING": {
+                        "name": "Branding",
+                        "description": "Multi-client branding for demos. Switch active client via PUBLIC__app__branding__activeClient.",
+                        "folder": "branding",
+                        "defaultOn": true,
+                        "dependencies": []
+                    }
+                }
+            }
+        },
+        {
+            "path": "src/types/config.ts",
+            "op": "insert-after-anchor",
+            "anchor": "branding: \\{\\s*\\n\\s*name: string;\\s*\\n\\s*logoAlt: string;",
+            "insert": "\n            /** @sfdc-extension-line SFDC_EXT_BRANDING */\n            activeClient?: string;",
+            "description": "Add optional activeClient field to AppConfig.global.branding type"
+        },
+        {
+            "path": "config.server.ts",
+            "op": "replace-anchor",
+            "anchor": "branding: \\{ name: 'Performer', logoAlt: 'Home' \\},",
+            "replacement": "branding: { name: 'Performer', logoAlt: 'Home', activeClient: 'default' /** @sfdc-extension-line SFDC_EXT_BRANDING */ },",
+            "description": "Seed activeClient default in config.server.ts"
+        },
+        {
+            "path": "src/root.tsx",
+            "op": "insert-after-anchor",
+            "anchor": "import appStylesHref from '\\./theme/index\\.css\\?url';",
+            "insert": "\n/** @sfdc-extension-line SFDC_EXT_BRANDING */\nimport brandingThemesHref from '@/extensions/branding/themes.css?url';",
+            "description": "Import aggregated branding themes CSS"
+        },
+        {
+            "path": "src/root.tsx",
+            "op": "insert-after-anchor",
+            "anchor": "\\{ rel: 'stylesheet', href: appStylesHref \\},",
+            "insert": "\n        { rel: 'stylesheet', href: brandingThemesHref } /** @sfdc-extension-line SFDC_EXT_BRANDING */,",
+            "description": "Register branding themes stylesheet"
+        },
+        {
+            "path": "src/root.tsx",
+            "op": "replace-anchor",
+            "anchor": "<html lang=\\{lang\\} dir=\\{dir\\}>",
+            "replacement": "<html lang={lang} dir={dir} data-brand={appConfig?.global?.branding?.activeClient ?? 'default'} /** @sfdc-extension-line SFDC_EXT_BRANDING */>",
+            "description": "Add data-brand attribute on <html>"
+        },
+        {
+            "path": "src/components/header/index.tsx",
+            "op": "insert-after-anchor",
+            "anchor": "import logo from '/images/logo\\.svg';",
+            "insert": "\nimport { UITarget } from '@/targets/ui-target';",
+            "description": "Import UITarget in header"
+        },
+        {
+            "path": "src/components/header/index.tsx",
+            "op": "replace-anchor",
+            "all": true,
+            "anchor": "<img\\s+src=\\{logo\\}\\s+alt=\\{t\\('logoAlt'\\)\\}\\s+className=\"h-3 lg:h-4 w-auto \\[filter:var\\(--header-logo-filter\\)\\]\"\\s*/>",
+            "replacement": "{/* @sfdc-extension-line SFDC_EXT_BRANDING */}\n                        <UITarget targetId=\"header.logo\"><img src={logo} alt={t('logoAlt')} className=\"h-3 lg:h-4 w-auto [filter:var(--header-logo-filter)]\" /></UITarget>",
+            "description": "Wrap header logo in UITarget (both mobile and desktop variants)"
+        },
+        {
+            "path": "src/components/footer/index.tsx",
+            "op": "insert-after-anchor",
+            "anchor": "import logo from '/images/logo\\.svg';",
+            "insert": "\nimport { UITarget } from '@/targets/ui-target';",
+            "description": "Import UITarget in footer"
+        },
+        {
+            "path": "src/components/footer/index.tsx",
+            "op": "replace-anchor",
+            "anchor": "<img\\s+src=\\{logo\\}\\s+alt=\\{t\\('logoAlt'\\)\\}\\s+className=\"h-4 w-auto\"\\s*/>",
+            "replacement": "{/* @sfdc-extension-line SFDC_EXT_BRANDING */}\n                                            <UITarget targetId=\"footer.logo\"><img src={logo} alt={t('logoAlt')} className=\"h-4 w-auto\" /></UITarget>",
+            "description": "Wrap footer logo in UITarget"
+        },
+        {
+            "path": "src/routes/_app._index.tsx",
+            "op": "insert-after-anchor",
+            "anchor": "import HeroCarousel, \\{ HeroCarouselSkeleton, type HeroSlide \\} from '@/components/hero-carousel';",
+            "insert": "\n/** @sfdc-extension-line SFDC_EXT_BRANDING */\nimport { UITarget } from '@/targets/ui-target';",
+            "description": "Import UITarget in home route"
+        },
+        {
+            "path": "src/routes/_app._index.tsx",
+            "op": "replace-anchor",
+            "anchor": "<HeroCarousel\\s+slides=\\{heroSlides\\}\\s+autoPlay=\\{true\\}\\s+autoPlayInterval=\\{6000\\}\\s+showNavigation=\\{true\\}\\s+showDots=\\{true\\}\\s*/>",
+            "replacement": "<UITarget targetId=\"home.hero\"><HeroCarousel slides={heroSlides} autoPlay={true} autoPlayInterval={6000} showNavigation={true} showDots={true} /></UITarget>",
+            "description": "Wrap home hero in UITarget"
+        },
+        {
+            "path": "src/routes/_app._index.tsx",
+            "op": "wrap-anchor-block",
+            "openAnchor": "\\{/\\* Featured Content Cards - Static content \\*/\\}\\s*\\n\\s*<div className=\"pt-16\">",
+            "closeAnchor": "</div>\\s*\\n\\s*</div>\\s*\\n\\s*</div>",
+            "openInsert": "<UITarget targetId=\"home.featuredContent\">",
+            "closeInsert": "</UITarget>",
+            "description": "Wrap home featured content block in UITarget"
+        },
+        {
+            "path": ".gitignore",
+            "op": "append-if-missing",
+            "marker": ".env.profiles",
+            "append": "\n# Demo branding profiles (real .env files are private; only .example versioned)\n.env.profiles/*.env\n!.env.profiles/*.env.example\n.env.backup/\n",
+            "description": "Ignore real env profiles and backup folder"
+        },
+        {
+            "path": "package.json",
+            "op": "merge-json",
+            "merge": {
+                "scripts": {
+                    "demo:switch": "node scripts/demo-switch.mjs",
+                    "demo:list": "node scripts/demo-switch.mjs --list"
+                }
+            }
+        }
+    ]
+}

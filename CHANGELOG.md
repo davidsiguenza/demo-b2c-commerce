@@ -2,6 +2,20 @@
 
 All notable changes to `demo-b2c-commerce` are documented here.
 
+## [0.2.0] — Phase 1: Vendor dsp-storefrontnext-demo
+
+### Added
+- **Plugin `dsp-storefrontnext-demo`** vendored into `plugins/dsp-storefrontnext-demo`
+  (skills `dsp-sfn-demo-branding` + `dsp-sfn-demo-pd-import`), flattening the old
+  `skills/dsp-storefrontnext-demo/skills/*` double-nesting. Registered as the
+  second plugin in `marketplace.json`.
+- **`sfn-demo-toolkit` CLI** vendored into `packages/sfn-demo-toolkit` (73 files,
+  no `node_modules`). `bootstrap.sh` now links it successfully (`sfn-toolkit 0.7.0`).
+
+### Changed
+- Branding skill's toolkit-setup references updated from `<plugin-repo>/toolkit`
+  to `<demo-b2c-commerce>/packages/sfn-demo-toolkit` + `./scripts/bootstrap.sh`.
+
 ## [0.1.0] — Phase 0: Scaffold
 
 The skeleton of the meta-orchestrator.

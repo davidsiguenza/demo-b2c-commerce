@@ -1,0 +1,3 @@
+/* Aggregated brand themes. Each client adds a :root[data-brand='<id>'] block. */
+@import './clients/default/theme.css';
+/* sfn-toolkit: append additional client theme imports here. */

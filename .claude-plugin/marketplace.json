@@ -18,6 +18,18 @@
       "category": "productivity",
       "strict": false,
       "version": "0.1.0"
+    },
+    {
+      "name": "dsp-storefrontnext-demo",
+      "description": "Skills to accelerate branded Storefront Next demos — branding a new client site and importing Page Designer pages/components into a B2C sandbox. Drives the master flow's steps 5-8.",
+      "author": {
+        "name": "David Siguenza"
+      },
+      "license": "Apache-2.0",
+      "source": "./plugins/dsp-storefrontnext-demo",
+      "category": "productivity",
+      "strict": false,
+      "version": "1.0.0"
     }
   ]
 }

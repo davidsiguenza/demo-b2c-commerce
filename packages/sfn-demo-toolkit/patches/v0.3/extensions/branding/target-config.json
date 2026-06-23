@@ -1,0 +1,24 @@
+{
+    "components": [
+        {
+            "targetId": "header.logo",
+            "path": "extensions/branding/components/branded-logo.tsx",
+            "order": 0
+        },
+        {
+            "targetId": "footer.logo",
+            "path": "extensions/branding/components/branded-footer-logo.tsx",
+            "order": 0
+        },
+        {
+            "targetId": "home.hero",
+            "path": "extensions/branding/components/branded-hero.tsx",
+            "order": 0
+        },
+        {
+            "targetId": "home.featuredContent",
+            "path": "extensions/branding/components/branded-featured-content.tsx",
+            "order": 0
+        }
+    ]
+}
