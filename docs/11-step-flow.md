@@ -63,15 +63,22 @@ bootstrap `.env` from the SLAS creds, confirm `pnpm dev` connects to the sandbox
 
 ### 6. Branding + content `6_branding` → `dsp-sfn-demo-branding`
 Research the brand at `client.source_url`; hand-write `content.ts` + `theme.css`;
-download real assets; override brand tokens. Visual check Home/PLP/PDP.
+download real assets; override brand tokens.
+**⛔ Mandatory visual checkpoint:** boot `pnpm dev`, give the user the URL, and
+**wait for them to confirm** Home/PLP/PDP look right before marking `done`. The
+step is done when the *user signs off*, not when the files are written.
 **Reads:** `client.source_url`, `sfn.target_repo_path`.
 
-### 7. Page Designer template `7_pd_template` → `dsp-sfn-demo-pd-import`
+> **Steps 7–8 are OPTIONAL.** After step 6 the storefront is already branded.
+> Ask the user whether they also want the home as a Page Designer page (editable
+> in BM). If not → mark 7 & 8 `skipped` and jump to step 9.
+
+### 7. Page Designer template `7_pd_template` → `dsp-sfn-demo-pd-import` *(optional)*
 Create a PD template mirroring the SFN home component set/regions. Discover
 shared vs site-private library first (mind the 6 documented gotchas).
 **Reads:** `b2c.site_id`, `sfn.target_repo_path`.
 
-### 8. Apply client content to PD `8_pd_content` → `dsp-sfn-demo-pd-import`
+### 8. Apply client content to PD `8_pd_content` → `dsp-sfn-demo-pd-import` *(optional)*
 Populate the PD template with the step-6 content (hero, featured cards, images
 via WebDAV or bundled). Verify the PD home renders branded.
 

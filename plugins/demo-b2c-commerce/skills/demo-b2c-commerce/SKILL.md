@@ -25,6 +25,14 @@ After every step: write `demo-state.json`, print a progress line
 (`Paso N/11 ✓ — <qué pasó>. Siguiente: Paso N+1 (<owner>)`), and hand back to
 the user before starting the next step.
 
+> **A step is NOT `done` just because the work ran.** Some steps have an
+> explicit user-facing checkpoint (e.g. step 6 = "the user has SEEN the branded
+> storefront"). For those, "done" means *the user confirmed the result*, not
+> *the files were written*. A summary line is not a substitute for showing the
+> user the actual output. If a validation command fails (e.g. `pnpm dev`
+> doesn't boot), the step is **not** done — fix it or report `blocked`, never
+> advance on a failed check.
+
 ---
 
 ## State file — `demo-state.json`
@@ -161,7 +169,35 @@ download real customer assets, override brand tokens.
 - Inputs: `client.source_url`, `sfn.target_repo_path`.
 - Follow the skill's "Claude is the designer" principle — don't trust the
   heuristic scraper for content quality.
-- Mark `done` after a visual check of Home / PLP / PDP in `pnpm dev`.
+
+> **⛔ MANDATORY VISUAL CHECKPOINT — do NOT mark this step `done`, and do NOT
+> proceed to step 7, until the user has SEEN the branded storefront and
+> confirmed it.** This is the heart of the whole flow; skipping the review is
+> the #1 failure mode. Specifically:
+> 1. Start `pnpm dev` and confirm it actually serves (if the default port is
+>    busy, pick another and report the real URL — do **not** treat a failed
+>    boot as success).
+> 2. Give the user the local URL and explicitly ask them to open **Home, a PLP,
+>    and a PDP** and confirm the branding looks right (logo, hero, colours,
+>    hover states, copy).
+> 3. **Stop and wait.** Only after the user confirms (or after you iterate on
+>    `content.ts`/`theme.css` to fix what they flag) do you set `status: done`
+>    and persist. If the user wants changes, stay on step 6.
+
+After the user signs off on the branding, **ask whether they want to also build
+the home as a Page Designer page** (steps 7–8) — see the gate below.
+
+### Steps 7–8 are OPTIONAL — gate before starting
+> **Page Designer is an add-on, not required for a finished branded demo.**
+> After step 6 the storefront is already branded (in React). Steps 7–8 re-create
+> the home as a **Page Designer** page so it's editable from Business Manager —
+> useful to *demo the content-authoring capability*, unnecessary otherwise.
+>
+> **Ask the user: "¿Quieres además montar el home en Page Designer (editable
+> desde BM), o saltamos directos al catálogo?"**
+> - If **no** → set steps `7_pd_template` and `8_pd_content` to `status:
+>   skipped` (with a note), persist, and jump to **step 9**.
+> - If **yes** → proceed with steps 7 and 8 below.
 
 ### Step 7 — [IA] Page Designer template `7_pd_template` → skill `dsp-sfn-demo-pd-import`
 Invoke **`dsp-sfn-demo-pd-import`** to create a Page Designer template whose

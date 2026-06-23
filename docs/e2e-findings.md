@@ -17,3 +17,28 @@ Organization ID) live together on **one page**: *Administration → Site
 Development → Salesforce Commerce API Settings*. The skill previously scattered
 them across non-existent "Global Preferences" paths. When in doubt about where a
 SCAPI/SLAS identity value lives, that page is the first place to point the user.
+
+### Behavioural finding — step 6 branding "invisible" to the user
+
+Symptom: the user felt the agent skipped branding and jumped straight to Page
+Designer. Transcript analysis (`~/demo-state.json` + session log) showed the
+branding **was actually done** (logo, heroes, amber tokens, es-ES copy; 23
+`content.ts` + 15 `theme.css` touches, `sfn-toolkit apply` ran) and marked
+`6_branding: done` — but the agent **never paused to show it**: it printed a
+summary line and chained 5→6→7, and `pnpm dev` had even failed on a busy port
+5173 without blocking progress.
+
+Root cause: step 6 said "mark done after a visual check" but didn't make the
+checkpoint a hard stop. Fixes applied:
+- **Mandatory visual checkpoint** in step 6: boot `pnpm dev` (real URL, not a
+  failed boot), hand the user the URL, and **wait for sign-off** before `done`.
+- **Prime-directive clarification**: "a step is not done just because the work
+  ran" — done means the user confirmed; a failed validation = `blocked`, never
+  advance.
+- **Steps 7–8 (Page Designer) made optional**: after branding, ask the user
+  whether to also build the PD home; if not, mark 7 & 8 `skipped` → jump to
+  step 9.
+
+**Pattern noticed:** any step with a user-facing artifact (branded storefront,
+catalog preview) needs an explicit "show it and wait" gate. A progress summary
+is not proof the user saw the result. Audit other steps for the same gap.
