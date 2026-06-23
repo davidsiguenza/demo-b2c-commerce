@@ -80,6 +80,20 @@ checklist, not as vague "make it look good" guidance. When the user spots a new
 class of defect, add it as a checklist item here so it's caught automatically
 next time.
 
+### Setup finding — preflight should detect what's already installed
+
+The skill told the user to register the marketplace / run bootstrap without
+checking whether it was already done — friction on a returning machine. Added an
+idempotent **preflight** to "On invocation": the fact that the master skill ran
+proves the marketplace is registered; check the sibling plugins via the plugin
+cache (`~/.claude/plugins/cache/<plugin>`), `sfn-toolkit --version`, and the
+BFF's `node_modules`; then instruct **only** the missing piece (and only when
+the step that needs it is reached). On this machine the check revealed
+`b2c-catalog-onboarding` was absent from the cache (published in Phase 2, after
+the marketplace was first registered) while the other two were present — exactly
+the partial-setup case the preflight now handles with a single targeted
+`/plugin install b2c-catalog-onboarding@demo-b2c-commerce`.
+
 ### Image-resolution finding — small images stretched into large slots
 
 A small image/icon (e.g. a 32–64px icon or a thumbnail) wired into a full-width

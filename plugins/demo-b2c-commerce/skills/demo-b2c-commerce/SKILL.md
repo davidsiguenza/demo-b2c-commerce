@@ -56,9 +56,32 @@ Helpers live in `scripts/lib/state.mjs` (zero-dep). Schema:
    - **Present** → load it. This is a **resume**: find the first step whose
      status is not `done`/`skipped` and continue there. Tell the user where you
      are picking up.
-2. Verify the sub-skill plugins are installed (see *Dependencies* below). If a
-   needed sub-skill is missing, stop and instruct the user to run
-   `scripts/bootstrap.sh` + register the marketplace.
+2. **Preflight — detect what's already set up; only ask for what's missing.**
+   Don't tell the user to register the marketplace or run bootstrap before
+   checking whether it's already done (the common case on a returning machine).
+   Check each, silently, and report a short summary:
+   - **Sub-skills available?** The fact that *this* skill (`demo-b2c-commerce`)
+     ran means the marketplace is registered. Check the two sibling plugins are
+     installed by testing whether their skills resolve — look for them in the
+     plugin cache:
+     ```bash
+     ls ~/.claude/plugins/cache/dsp-storefrontnext-demo 2>/dev/null && echo OK_branding
+     ls ~/.claude/plugins/cache/b2c-catalog-onboarding 2>/dev/null && echo OK_catalog
+     ```
+   - **Toolkit CLI linked?** `sfn-toolkit --version` (needed for steps 5–9).
+   - **BFF deps installed?** `test -d <repo>/packages/b2c-catalog-onboarding-bff/node_modules`
+     (needed for steps 10–11).
+
+   Then act on the result:
+   - Everything present → say so in one line ("Entorno listo: marketplace +
+     3 plugins + toolkit OK") and proceed. **Do not** ask the user to install
+     anything.
+   - Only some missing → instruct **only** the missing piece (e.g. just
+     `./scripts/bootstrap.sh` if the CLI isn't linked, or just the specific
+     `/plugin install …@demo-b2c-commerce` for an absent sub-plugin). Don't
+     re-issue steps that are already done.
+   - A missing piece isn't needed until a later step → note it and continue;
+     re-check right before the step that needs it rather than blocking step 1.
 3. Announce the plan (the 11 steps, who owns each) once, then begin at the
    first pending step.
 
@@ -324,9 +347,12 @@ This master skill orchestrates sub-skills that live in the same marketplace:
   fall back to the `sfn-toolkit` catalog scripts for steps 9–11 and tell the
   user that automated upload/reindex is not yet wired.
 
-Claude Code does not auto-install or version-pin sub-plugins. If a sub-skill is
-not available, **detect and instruct** — do not attempt the step manually
-without telling the user what's missing.
+Claude Code does not auto-install or version-pin sub-plugins. **Detect first,
+then instruct only what's missing** (see the preflight in *On invocation*) —
+never ask the user to register the marketplace or run bootstrap without checking
+whether it's already done. If a sub-skill genuinely isn't available, tell the
+user the one command that fixes it; don't attempt the step manually as if the
+tooling were present.
 
 ## Resume & idempotency
 
