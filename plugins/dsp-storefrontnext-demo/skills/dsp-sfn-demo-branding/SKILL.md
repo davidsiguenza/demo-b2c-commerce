@@ -224,9 +224,22 @@ the recurring quality defects — treat each as a blocker, not a nice-to-have.
 - [ ] Swatches, "Add to Cart", "Add to Wishlist" render in the brand color.
 - [ ] Gallery shows multiple views, not a single repeated hero shot.
 
-**General**
+**Header + footer**
 - [ ] Header + footer logo show the brand; logo renders in its native colours
   (`--header-logo-filter: none` if the logo isn't black).
+- [ ] **Text vs background contrast in header and footer is legible.** The most
+  common defect: the template defaults to a dark header/footer with light text,
+  the brand override changes the background to white/light without updating the
+  foreground variables — so links, nav items, copyright text and icons end up
+  dark-on-dark (or light-on-light) and effectively invisible. Inspect every
+  visible string in both bars: top nav links, account/cart icons, mini-cart
+  count, language switcher, footer columns, social icons, copyright line,
+  legal links. If anything is hard to read, fix the `--header-*` / `--footer-*`
+  foreground tokens — don't paper over it with a single override.
+- [ ] Hover/focus states on header and footer links remain readable (no link
+  that disappears on hover because the hover colour equals the background).
+
+**General**
 - [ ] No leftover template/sample copy or placeholder Lorem text anywhere.
 
 If **any** box fails, iterate on `content.ts` / `theme.css` / the assets and
