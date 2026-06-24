@@ -64,14 +64,42 @@ Grab a starter template any time: `GET /api/csv-template`.
 
 ## Prerequisites (verify before step 10)
 
+> **Read this first — three catalog IDs in play, easy to confuse.**
+> When the master flow reaches this skill, the site is already rendering thanks
+> to a **placeholder Storefront Catalog** that the user assigned in step 2 (e.g.
+> a sample `storefront-catalog-*` that ships with the realm). That placeholder
+> is **not** the upload target. The whole point of step 10 is to **create a new
+> brand-specific catalog from scratch**, import the scraped products into it,
+> and then **swap the site's bindings** away from the placeholder to the new
+> catalog. Do not reuse the placeholder id as `STOREFRONT_CATALOG_ID`.
+>
+> **Before configuring the BFF, ask the user which path they want:**
+> - **(default) Create a new catalog** — pick a brand-named id like
+>   `<brand>-catalog` (e.g. `camper-catalog`). The import job materializes it
+>   on first commit; no need to pre-create in BM.
+> - **Upload into an existing catalog** — only when the user explicitly wants
+>   to keep an existing catalog id (rare in this flow; usually they re-run
+>   step 10 to refresh). Confirm the id and warn that existing products with
+>   the same ids will be overwritten.
+
 1. **The BFF must be configured.** It reads sandbox + credentials from its
    `.env` (`packages/b2c-catalog-onboarding-bff/.env`, copied from
    `.env.example`). Required:
    - `B2C_INSTANCE_HOST`, `B2C_SHORT_CODE`
-   - `STOREFRONT_CATALOG_ID`, `DEFAULT_PRICEBOOK_ID`, `DEFAULT_INVENTORY_LIST_ID`
-     (the catalog/pricebook/inventory the **site actually uses** — find in BM →
-     Merchant Tools → Products and Catalogs; the pipeline rewrites uploaded ids
-     to these so the storefront sees the data)
+   - `STOREFRONT_CATALOG_ID` — **the NEW catalog id we're creating in this
+     step** (e.g. `camper-catalog`). The import job materializes it; the
+     site's current placeholder catalog stays untouched until we re-point
+     bindings (master step 10, final sub-step). Never set this to the
+     placeholder catalog id from step 2.
+   - `DEFAULT_PRICEBOOK_ID`, `DEFAULT_INVENTORY_LIST_ID` — the pricebook +
+     inventory list that **must already exist in the sandbox** (the import
+     job won't create them). Two options, ask the user:
+     1. **Reuse** the placeholder catalog's pricebook + inventory list (find
+        them in BM → Merchant Tools → Products and Catalogs → on the
+        placeholder catalog). Fastest path — fine for a demo.
+     2. **Use brand-specific ones** the user has pre-created in BM
+        (e.g. `camper-pricebook`, `camper-inventory`). Cleaner separation.
+     The pipeline rewrites uploaded ids to whichever you pick.
    - `AM_CLIENT_ID` + `AM_CLIENT_SECRET` (Account Manager API client, scope
      `SALESFORCE_COMMERCE_API:<tenant>`)
    - `WEBDAV_USER` + `WEBDAV_PASSWORD` (BM user + per-user WebDAV password)

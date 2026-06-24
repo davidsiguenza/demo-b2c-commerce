@@ -308,7 +308,24 @@ Invoke **`b2c-catalog-onboarding`** to ingest the step-9 artifact: validate →
 preview → repackage as site-archive → WebDAV PUT to `/Impex/src/instance/` →
 trigger `sfcc-site-archive-import` → poll until `OK`/`FINISHED`.
 
-- Inputs: catalog artifact (step 9), `b2c.*`, WebDAV + Account Manager creds.
+> **Before configuring the BFF, ask the user:**
+> 1. **"¿Creamos un catálogo nuevo (recomendado) o subimos a uno existente?"**
+>    Default = new catalog. The placeholder catalog assigned in step 2 is
+>    **NOT** the target — it was scaffolding so the storefront would render.
+>    The new catalog id should be brand-named (e.g. `<brand>-catalog`); the
+>    sfcc import job materializes it on first commit, no need to pre-create.
+> 2. **"¿Reutilizamos el pricebook + inventory list del catálogo placeholder, o
+>    usas unos nuevos creados en BM?"** Pricebook and inventory list must
+>    already exist in the sandbox (import job won't create them). Reusing the
+>    placeholder's is the fastest path for a demo; brand-specific ones (e.g.
+>    `<brand>-pricebook`, `<brand>-inventory`) are cleaner. Write the chosen
+>    ids into `b2c.{catalog_id,pricebook_id,inventory_list_id}` in state.
+>
+> Persist these answers in `demo-state.json` before invoking the sub-skill, so
+> the BFF `.env` reflects the **target** ids — not the placeholder.
+
+- Inputs: catalog artifact (step 9), `b2c.*` (now populated with the **target**
+  catalog/pricebook/inventory ids), WebDAV + Account Manager creds.
 - **Pricing caveat:** `price_book_entries` is deprecated in OCAPI Data on some
   pods (e.g. `zzse-258`). Treat pricing as **best-effort**: if it fails, set the
   step `note` to the blocker and continue — do NOT hard-fail the whole flow.
