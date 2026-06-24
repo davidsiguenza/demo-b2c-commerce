@@ -120,16 +120,80 @@ Helpers live in `scripts/lib/state.mjs` (zero-dep). Schema:
 Legend: **[USER]** = you pause and wait for the user. **[IA]** = you do it
 (usually by invoking a sub-skill).
 
-### Step 1 — [USER] B2C sandbox `1_sandbox`
-The user must have a B2C Commerce sandbox available (on-demand or provisioned).
-Print this checklist, then **ask the user to confirm** the sandbox is up and
-they can log into Business Manager. On confirmation: capture
-`b2c.instance_url` + `b2c.shortcode`, set status `done`, persist.
+### Step 1 — [USER] Sandbox + credentials intake `1_sandbox`
+> **Front-load everything.** Don't drip-feed credentials across steps 1–4. The
+> goal of this step is that, by the time the user marks it done, the agent has
+> in hand **every secret and identifier needed to operate the sandbox
+> autonomously through step 11** — except for things that genuinely don't
+> exist yet (the site id, created in step 2).
 
-> The **shortcode** is the 8-char alphanumeric value at **BM → Administration →
-> Site Development → Salesforce Commerce API Settings** (it is NOT under Global
-> Preferences). `instance_url` is the BM host
-> (`<sandbox>.dx.commercecloud.salesforce.com`).
+Confirm the sandbox is up and Business Manager is reachable, then collect the
+batch below with **a single `AskUserQuestion` round** (or two if the form is
+big). Group related items so the user can paste them all from their notes /
+sandbox provisioning email.
+
+**A — Client & sandbox identifiers** (non-secret, persisted in state):
+- `client.name`, `client.source_url`
+- `b2c.instance_url` — `<sandbox>.dx.commercecloud.salesforce.com`
+- `b2c.shortcode` — 8-char value at BM → Administration → Site Development →
+  **Salesforce Commerce API Settings** (NOT under Global Preferences)
+- `b2c.organization_id` — the **Organization ID** on the same page
+  (e.g. `f_ecom_zzse_262`)
+- `b2c.currency` (default `EUR`), `b2c.locale` (default `es-ES`)
+
+**B — Account Manager + BM + WebDAV credentials** (used to generate `dw.json`,
+raw values NEVER persisted in state):
+- API client id + secret (the one configured in Account Manager for this realm)
+- BM username + password
+- WebDAV password (per-user, set in BM → My User → Manage WebDAV access)
+
+→ With these, **the agent writes `dw.json` in the demo working dir** (gitignored)
+and persists only `b2c.dw_json_path`:
+```json
+{
+  "hostname":      "<instance_url>",
+  "client-id":     "<api-client-id>",
+  "client-secret": "<api-client-secret>",
+  "username":      "<bm-user>",
+  "password":      "<bm-pass>",
+  "short-code":    "<shortcode>",
+  "tenant-id":     "<organization_id without f_ecom_ prefix>"
+}
+```
+chmod 600.
+
+**C — SLAS credentials** (raw values into the SFN repo `.env` when step 5
+clones it; until then keep in env vars):
+- SLAS `tenant_id` (typically `b2c.organization_id` without the `f_ecom_`
+  prefix — confirm with the user)
+- SLAS `client_id` + `client_secret` (created in the SLAS Admin UI)
+
+→ Persist only the **env var names** in `slas.client_id_secret` /
+`slas.client_secret_secret`. Don't write raw secrets to `demo-state.json`.
+
+**D — Managed Runtime** (used in step 11 — optional now, can be deferred):
+- `sfn.mrt_project` slug (leave empty if the project doesn't exist yet —
+  it's created on first push)
+- `sfn.mrt_environment` (`staging` / `production` / `preview`, default
+  `production` if unsure)
+- `~/.mobify` API key. If the user already has it set up, mark
+  `sfn.mrt_credentials_ready: true`. If not, give the link
+  https://runtime.commercecloud.com → Account Settings → API Keys, and
+  write `~/.mobify` (chmod 600) with `{ "username": "<email>", "api_key": "<k>" }`.
+
+**Validation before marking done.** Run these end-to-end — they tell you the
+intake is complete and step 4b will succeed without further user prompts:
+```bash
+b2c --config "$DW_JSON_PATH" setup inspect   # dw.json shape OK
+b2c --config "$DW_JSON_PATH" auth token >/dev/null  # AM oauth works
+# (If sfn.mrt_credentials_ready=true:) test -s ~/.mobify
+```
+
+If `auth token` returns a token that only has `mail` scope, that's expected
+**now** — scopes get added in step 4b. The point of step 1 is to have all
+the **values** captured; scope/OCAPI hardening happens in 4b.
+
+Persist everything, mark `done`.
 
 ### Step 2 — [USER] Site in the sandbox `2_site`
 The user creates the storefront **Site** in BM (Administration → Sites → Manage
@@ -137,13 +201,15 @@ Sites → New). On the **General** page the mandatory fields are: **ID, Name,
 Time Zone, Default Currency, Taxation, Customer List** — there is **no locale
 field here**. The site **ID** is **case-sensitive** and is reused in every later
 step (catalog archive, env profiles), so pick something short with no spaces
-(e.g. `bimylol`). Ask for the chosen `site_id` + `currency`; write them; confirm;
-`done`.
+(e.g. `bimylol`).
 
-> **Locale comes later, not on this page.** The default locale is set after
-> creation (Merchant Tools → Site Preferences → Locales, or via the storefront
-> creation process in step 3). Capture `b2c.locale` then, or leave the template
-> default (`es-ES`) and adjust if needed.
+**Only `b2c.site_id` is captured here** — currency/locale already came from the
+step-1 intake. Use those as the defaults the user types into BM; only ask
+again if the user explicitly diverges from them. Confirm, write, `done`.
+
+> **Locale set on the site after creation.** Merchant Tools → Site Preferences
+> → Locales (or via the storefront creation process in step 3). If the user
+> picked a non-default locale in BM, update `b2c.locale` here.
 
 > **⚠ Assign a Storefront Catalog now, or the storefront won't render.** A site
 > with **no Storefront Catalog assigned** fails to load PLPs/PDPs — and the
@@ -168,24 +234,28 @@ The user runs the Storefront Next storefront-creation process in BM (registers
 the storefront, SCAPI/SLAS scaffolding). Print the exact BM path and what to
 click. Wait for confirmation; `done`.
 
-### Step 4 — [USER] Provide SLAS credentials `4_slas_creds`
-The user provides SLAS credentials so the AI steps can connect the SFN template
-to the sandbox. Collect:
-- `slas.tenant_id` — this is the **Organization ID** shown at **BM →
-  Administration → Site Development → Salesforce Commerce API Settings**
-  (e.g. `f_ecom_zzse_262`). The SLAS "tenant" is that org id, usually written
-  **without** the `f_ecom_` prefix (`zzse_262`). The same page also shows the
-  **Short Code** (captured in step 1). There is **no** "SLAS Administration →
-  Tenant ID" page — don't send the user looking for one.
-- the SLAS **client id** and **client secret** — created in the **SLAS Admin
-  UI** (or via the SLAS Admin API) for this tenant; not on the BM API Settings
-  page.
+### Step 4 — [USER] Confirm SLAS credentials `4_slas_creds`
+SLAS tenant_id + client_id + client_secret were already collected in the
+step-1 intake (section C). **In step 4 just verify they're usable** — don't
+re-ask the user unless something is missing.
 
-> **Secret hygiene (mandatory):** do NOT write the raw client id/secret into
-> `demo-state.json`. Instead, instruct the user to export them as env vars
-> (or place them in the SFN repo `.env`), and store only the **names** in
-> `slas.client_id_secret` / `slas.client_secret_secret`. Confirm you can read
-> the env vars; then `done`.
+Verify:
+- `slas.tenant_id` is populated (default = `b2c.organization_id` minus the
+  `f_ecom_` prefix; confirm with the user if it differs).
+- The env vars named in `slas.client_id_secret` / `slas.client_secret_secret`
+  resolve in the current shell. Quick check:
+  ```bash
+  test -n "${SLAS_CLIENT_ID:-}" && test -n "${SLAS_CLIENT_SECRET:-}" && echo OK
+  ```
+- If the variable names came in via a `.env` file the user pasted, source it
+  before checking.
+
+If anything is missing or the env vars don't resolve, **only then** prompt
+for the specific gap. Otherwise mark `done` immediately — the intake already
+did the work.
+
+> **Secret hygiene (still mandatory):** never write the raw client id/secret
+> into `demo-state.json`. State holds only the **names** of the env vars.
 
 ---
 

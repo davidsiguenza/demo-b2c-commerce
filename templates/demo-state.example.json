@@ -6,9 +6,12 @@
   "b2c": {
     "instance_url": "",
     "shortcode": "",
+    "organization_id": "",
     "site_id": "",
     "currency": "EUR",
-    "locale": "es-ES"
+    "locale": "es-ES",
+    "dw_json_path": "",
+    "access_setup_done": false
   },
   "slas": {
     "tenant_id": "",
@@ -18,7 +21,9 @@
   "sfn": {
     "template_source": { "kind": "official-latest" },
     "target_repo_path": "",
-    "mrt_project": ""
+    "mrt_project": "",
+    "mrt_environment": "",
+    "mrt_credentials_ready": false
   },
   "steps": {
     "1_sandbox":        { "owner": "user", "status": "pending" },

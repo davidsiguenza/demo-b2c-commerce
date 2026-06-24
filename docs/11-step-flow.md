@@ -21,17 +21,32 @@ authoritative runtime; this doc is the human-readable map.
 
 ## Phase A — User sets up the platform (steps 1–4)
 
-### 1. B2C sandbox `1_sandbox`
-The user has a working B2C Commerce sandbox and can log into Business Manager.
-**Captures:** `b2c.instance_url`, `b2c.shortcode`.
+### 1. Sandbox + credentials intake `1_sandbox`
+The user has a working B2C Commerce sandbox AND pastes every credential the
+agent will need downstream in **one batch**, so the rest of the flow doesn't
+keep asking for things. **Captures (4 groups in a single intake):**
+- **A. Identifiers** — `client.{name,source_url}`, `b2c.{instance_url,
+  shortcode, organization_id, currency, locale}`
+- **B. dw.json creds** (BM, Account Manager, WebDAV) — the agent writes
+  `dw.json` (chmod 600, gitignored) and stores only `b2c.dw_json_path`. Raw
+  values never enter state.
+- **C. SLAS** — `slas.tenant_id` (org_id without `f_ecom_` typically); raw
+  client_id/secret go into env vars / SFN `.env`, state holds the names in
+  `slas.client_id_secret` / `slas.client_secret_secret`.
+- **D. MRT** (optional, can be deferred until step 11) — `sfn.mrt_project`,
+  `sfn.mrt_environment`, `~/.mobify` API key (sets
+  `sfn.mrt_credentials_ready`).
+
+Quick validation: `b2c setup inspect` + `b2c auth token >/dev/null` succeed.
+(A token with only `mail` scope is fine here — scopes get added in step 4b.)
 
 ### 2. Site in the sandbox `2_site`
 The user creates the storefront Site in BM (Administration → Sites → Manage
 Sites → New). The **General** page mandatory fields are ID, Name, Time Zone,
 Default Currency, Taxation, Customer List — **no locale field here**. Site ID is
 case-sensitive and must match the future catalog archive. **Captures now:**
-`b2c.site_id`, `b2c.currency`. **`b2c.locale`** is set later (step 3 / Site
-Preferences), not on this page.
+only `b2c.site_id` (currency/locale already came from the intake; update locale
+here only if the user diverged in BM).
 **⚠ Assign a Storefront Catalog + Inventory List now** (Site Configuration) — a
 site with no catalog won't render PLPs/PDPs, and the client catalog doesn't
 exist until step 10. Bind an existing sandbox catalog as placeholder; step 10
@@ -42,15 +57,11 @@ re-points to the client's.
 The user runs the Storefront Next storefront-creation process in BM (storefront
 registration + SCAPI/SLAS scaffolding).
 
-### 4. Provide SLAS credentials `4_slas_creds`
-The user provides SLAS tenant id + client id/secret so the AI can connect the
-SFN template. The **tenant id** is the **Organization ID** at BM → Administration
-→ Site Development → Salesforce Commerce API Settings (e.g. `f_ecom_zzse_262`),
-usually written without the `f_ecom_` prefix (`zzse_262`) — there is no separate
-"SLAS Administration → Tenant ID" page. The **client id/secret** are created in
-the SLAS Admin UI. **Secret hygiene:** raw id/secret go into env vars / the SFN
-`.env`; only their **names** are stored in `slas.client_id_secret` /
-`slas.client_secret_secret`.
+### 4. Confirm SLAS credentials `4_slas_creds`
+SLAS tenant + client id/secret were captured in the step-1 intake. This step
+only **verifies** they're usable: `slas.tenant_id` non-empty, the env vars
+named in `slas.client_id_secret` / `slas.client_secret_secret` resolve in
+the current shell. Only re-prompt if something is missing.
 
 ### 4b. Phase-B preflight — Sandbox autonomy setup `4b_ai_access` *(one-time per sandbox)*
 Before invoking step 5, the AI client needs read/write access to the sandbox
