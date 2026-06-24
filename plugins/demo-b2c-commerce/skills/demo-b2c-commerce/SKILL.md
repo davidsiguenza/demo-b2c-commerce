@@ -270,6 +270,23 @@ or bundled in the archive).
 - Inputs: branding content from step 6, `b2c.site_id`.
 - Mark `done` after the PD home renders the branded content in the storefront.
 
+### Steps 9–10 are OPTIONAL — gate before starting
+> **A real client catalog is an add-on, not required for a finished demo.** The
+> storefront already renders with the placeholder Storefront Catalog assigned in
+> step 2 — PLPs/PDPs work, just with the sandbox's sample products instead of the
+> client's. Building and uploading a real catalog adds realism (real images,
+> brand SKUs, prices) but takes the longest of any step (scrape → normalize →
+> validate → site-archive → WebDAV → import → reindex) and depends on the source
+> site being scrapable.
+>
+> **Ask the user: "¿Quieres montar el catálogo real del cliente (scrapeo +
+> upload), o nos quedamos con el catálogo placeholder asignado en el paso 2?"**
+> - If **no** → set steps `9_catalog_build` and `10_catalog_upload` to `status:
+>   skipped` (with a note explaining the placeholder catalog stays in place),
+>   persist, and jump to **step 11**. In step 11 the reindex sub-step is also
+>   skipped (nothing new to index); only the MRT push runs.
+> - If **yes** → proceed with steps 9 and 10 below.
+
 ### Step 9 — [IA] Build the catalog `9_catalog_build` → skill `b2c-catalog-onboarding`
 Invoke **`b2c-catalog-onboarding`** (or, until it exists, the toolkit catalog
 scripts) to **acquire** product data from `client.source_url` and produce a
@@ -312,9 +329,14 @@ Two parts:
 1. **Reindex** so the storefront sees the catalog: trigger the `SearchReindex`
    job and poll to completion (the `b2c-catalog-onboarding` flow does this
    fire-and-forget after import; verify it actually ran).
+   **Skip this sub-step if step 10 was skipped** — there's no new catalog to
+   index, the placeholder catalog from step 2 is already indexed. Note this
+   in the step `note` ("reindex skipped — placeholder catalog only").
 2. **Push to MRT**: in the SFN repo (`sfn.target_repo_path`), run the Managed
    Runtime push (`npm run push` / `pnpm push`) for `sfn.mrt_project`. Capture
-   the resulting bundle/deployment URL into the step `note`.
+   the resulting bundle/deployment URL into the step `note`. **Always runs**,
+   regardless of whether catalog/PD steps were skipped — this is the final
+   deliverable.
 
 Mark `done`. Print the final summary: storefront URL, catalog status, MRT
 bundle. The demo is ready.

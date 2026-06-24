@@ -90,7 +90,13 @@ via WebDAV or bundled). Verify the PD home renders branded.
 
 ## Phase C — AI loads catalog & ships (steps 9–11)
 
-### 9. Build the catalog `9_catalog_build` → `b2c-catalog-onboarding`
+> **Steps 9–10 are OPTIONAL.** The site already has the placeholder catalog
+> assigned in step 2, so PLPs/PDPs render even if we skip the real catalog.
+> Ask: "¿Montamos catálogo real del cliente o nos quedamos con el placeholder?"
+> If no → mark 9 & 10 `skipped` and in step 11 skip the reindex sub-step (the
+> MRT push still runs).
+
+### 9. Build the catalog `9_catalog_build` → `b2c-catalog-onboarding` *(optional)*
 Acquire product data from `client.source_url` (scrape PLP/PDP, download images,
 enrich) and produce a **normalized CSV/ZIP** with inventory + pricing. Do not
 build the final site-archive here — the uploader does that next.
@@ -100,7 +106,7 @@ path in the step `note`.
 > Data acquisition uses the `sfn-demo-toolkit` catalog scripts; the BFF owns
 > ingestion. This split avoids two competing upload paths.
 
-### 10. Upload catalog `10_catalog_upload` → `b2c-catalog-onboarding` ⚠
+### 10. Upload catalog `10_catalog_upload` → `b2c-catalog-onboarding` ⚠ *(optional)*
 **Hard gate:** summarize (catalog id, # products, site, pricebook, inventory)
 and get explicit confirmation first. Then validate → preview → repackage
 site-archive → WebDAV PUT → trigger `sfcc-site-archive-import` → poll to
@@ -114,8 +120,11 @@ then reindex (step 11).
 
 ### 11. Reindex + push to MRT `11_reindex_push` → `b2c-catalog-onboarding` ⚠
 **Hard gate** (outward-facing). 1) Trigger `SearchReindex` and verify it ran so
-the storefront sees the catalog. 2) In `sfn.target_repo_path`, push to Managed
-Runtime (`npm run push`) for `sfn.mrt_project`; capture the bundle/deploy URL.
+the storefront sees the catalog — **skip this sub-step if step 10 was skipped**
+(placeholder catalog is already indexed). 2) In `sfn.target_repo_path`, push to
+Managed Runtime (`npm run push`) for `sfn.mrt_project`; capture the
+bundle/deploy URL. **The MRT push always runs**, regardless of whether
+PD/catalog steps were skipped — this is the final deliverable.
 Print the final summary: storefront URL, catalog status, MRT bundle.
 
 ---
