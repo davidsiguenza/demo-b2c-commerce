@@ -79,11 +79,16 @@ Helpers live in `scripts/lib/state.mjs` (zero-dep). Schema:
    - **BFF deps installed?** `test -d <repo>/packages/b2c-catalog-onboarding-bff/node_modules`
      (needed for steps 10–11).
    - **MRT auth** (needed for step 11 only — re-check right before the push,
-     not at flow start). The MRT push requires a per-user OAuth token from
-     `sfnext login`. There's no offline way to verify — `pnpm exec sfnext whoami`
-     returns the logged-in user or errors. Defer this check until just before
-     step 11; if not logged in, instruct the user to run
-     `pnpm exec sfnext login` in the SFN repo (browser flow) and pause.
+     not at flow start). `sfnext` reads MRT credentials from `~/.mobify`
+     (default), a `--credentials-file <path>` flag, or `--api-key <key>`.
+     **There is NO `sfnext login` subcommand** — do not suggest it. Verify
+     with `test -s ~/.mobify`; if missing or stale, the user generates an
+     API key at https://runtime.commercecloud.com → avatar menu →
+     **Account Settings** → **API Keys**, then writes:
+     ```json
+     { "username": "<user@salesforce.com>", "api_key": "<key>" }
+     ```
+     into `~/.mobify` (chmod 600). Defer this until just before step 11.
 
    Then act on the result:
    - Everything present → say so in one line ("Entorno listo: marketplace +
@@ -361,17 +366,27 @@ Two parts:
    regardless of whether catalog/PD steps were skipped — this is the final
    deliverable.
 
-   > **⚠ MRT auth is interactive — do this BEFORE the push, not after a 401.**
-   > The push requires a per-user OAuth token from Managed Runtime. Check first:
+   > **⚠ MRT auth is file-based — verify BEFORE the push, not after a 401.**
+   > The push reads credentials from `~/.mobify` by default (or `--api-key` /
+   > `--credentials-file`). **`sfnext` has no `login` subcommand** — don't
+   > tell the user to run one. Verify:
    > ```bash
-   > cd <sfn.target_repo_path> && pnpm exec sfnext whoami
+   > test -s ~/.mobify && cat ~/.mobify | python3 -c "import json,sys; d=json.load(sys.stdin); print('user:', d.get('username')); print('has_key:', bool(d.get('api_key')))"
    > ```
-   > - If it prints a user → proceed to the push.
-   > - If it errors / says "not logged in" → instruct the user to run
-   >   `pnpm exec sfnext login` in the SFN repo (opens a browser OAuth flow,
-   >   per-user, cannot be automated). Pause until they confirm login is done,
-   >   then proceed. Persist `mrt.authenticated_user` in state once verified
-   >   so a resume doesn't re-prompt unnecessarily.
+   > - If both fields are present → proceed to the push. If it then 401s, the
+   >   key is stale; fall through to the regeneration steps below.
+   > - If file missing / empty / no api_key → instruct the user:
+   >   1. Open https://runtime.commercecloud.com
+   >   2. Avatar menu → **Account Settings** → **API Keys** → generate
+   >      a key (or copy an existing one).
+   >   3. Write to `~/.mobify` (chmod 600):
+   >      ```json
+   >      { "username": "<user@salesforce.com>", "api_key": "<key>" }
+   >      ```
+   >   4. Confirm "done", then proceed.
+   >
+   > Persist `mrt.credentials_verified: true` in state once a push succeeds so
+   > a resume doesn't re-prompt unnecessarily.
 
 Mark `done`. Print the final summary: storefront URL, catalog status, MRT
 bundle. The demo is ready.
