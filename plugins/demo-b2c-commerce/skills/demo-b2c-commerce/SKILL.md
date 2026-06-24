@@ -33,6 +33,19 @@ the user before starting the next step.
 > doesn't boot), the step is **not** done — fix it or report `blocked`, never
 > advance on a failed check.
 
+> **Diagnose first, ask the user last.** When something fails mid-flow (SLAS
+> token rejected, import returns 0 products, BFF 4xx), do **not** immediately
+> tell the user to fix it in BM / the admin UI. The agent already has
+> `dw.json`, AM scopes, SLAS creds and WebDAV — that's enough to reproduce
+> the failure with `curl` / `b2c` and pinpoint the layer at fault (env-var
+> wiring vs runtime config vs server-side SLAS client vs sandbox state).
+> Only escalate to the user with a manual BM action **after** the agent
+> has proven the issue isn't fixable from the local side. The reverse order
+> wastes the user's time and erodes trust — a single past failure (May 2026,
+> SLAS token rejected on `zzse-047` because `.env` had the legacy var name)
+> was solved by `curl`-ing SLAS first instead of asking the user to add a
+> redirect URI to BM.
+
 ---
 
 ## State file — `demo-state.json`
@@ -171,6 +184,21 @@ clones it; until then keep in env vars):
 → Persist only the **env var names** in `slas.client_id_secret` /
 `slas.client_secret_secret`. Don't write raw secrets to `demo-state.json`.
 
+> **⚠ Canonical env var names (SFN runtime expects these exact keys).**
+> When step 5 writes `.env`, the SFN runtime reads the SLAS client id from
+> `PUBLIC__app__commerce__api__clientId` and the SLAS secret from
+> `COMMERCE_API_SLAS_SECRET`. Using `SLAS_CLIENT_ID` / `SLAS_CLIENT_SECRET`
+> (the legacy names) causes the runtime to fall back to anonymous / fail with
+> **"Access token is invalid or revoked"** even though a `curl` against SLAS
+> works. Default to the canonical names in `slas.client_id_secret` and
+> `slas.client_secret_secret`:
+> ```json
+> "slas": {
+>   "client_id_secret":     "PUBLIC__app__commerce__api__clientId",
+>   "client_secret_secret": "COMMERCE_API_SLAS_SECRET"
+> }
+> ```
+
 **D — Managed Runtime** (used in step 11 — optional now, can be deferred):
 - `sfn.mrt_project` slug (leave empty if the project doesn't exist yet —
   it's created on first push)
@@ -243,12 +271,29 @@ Verify:
 - `slas.tenant_id` is populated (default = `b2c.organization_id` minus the
   `f_ecom_` prefix; confirm with the user if it differs).
 - The env vars named in `slas.client_id_secret` / `slas.client_secret_secret`
-  resolve in the current shell. Quick check:
+  resolve in the current shell. Quick check (uses the names from state — do
+  NOT hard-code, the canonical pair is
+  `PUBLIC__app__commerce__api__clientId` + `COMMERCE_API_SLAS_SECRET`):
   ```bash
-  test -n "${SLAS_CLIENT_ID:-}" && test -n "${SLAS_CLIENT_SECRET:-}" && echo OK
+  CID_NAME=$(jq -r '.slas.client_id_secret' demo-state.json)
+  CSEC_NAME=$(jq -r '.slas.client_secret_secret' demo-state.json)
+  test -n "${!CID_NAME:-}" && test -n "${!CSEC_NAME:-}" && echo OK
   ```
 - If the variable names came in via a `.env` file the user pasted, source it
   before checking.
+- **Live SLAS curl** — prove the creds actually mint a token before declaring
+  step 4 done. Saves debugging step 5 / step 6 later:
+  ```bash
+  curl -sS -X POST "https://${B2C_SHORTCODE}.api.commercecloud.salesforce.com/shopper/auth/v1/organizations/${SLAS_TENANT_ID}/oauth2/token" \
+    -u "${!CID_NAME}:${!CSEC_NAME}" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "grant_type=client_credentials&channel_id=${B2C_SITE_ID}" \
+    | jq -r '.access_token | (. // "FAIL") | .[0:40]'
+  ```
+  Must print a token prefix. If it returns `FAIL` / `invalid_client` /
+  `unauthorized_client`, the creds themselves are wrong (or the site_id
+  channel is not enabled for this SLAS client) — fix that now, don't push
+  to step 5 with bad creds.
 
 If anything is missing or the env vars don't resolve, **only then** prompt
 for the specific gap. Otherwise mark `done` immediately — the intake already
@@ -370,10 +415,54 @@ source and wire it to the sandbox site using the SLAS credentials.
   force-apply on an unsupported version (especially likely with a pinned ref or
   a pre-existing local repo).
 - Bootstrap `.env` (use `--inherit-env` if the user has an existing working
-  `.env`, else fill from the SLAS creds collected in step 4).
+  `.env`, else fill from the SLAS creds collected in step 4). **The keys
+  must be the canonical SFN names**, not the legacy `SLAS_*` aliases:
+  ```bash
+  PUBLIC__app__commerce__api__clientId=<slas client_id>
+  PUBLIC__app__commerce__api__organizationId=<b2c.organization_id, with f_ecom_ prefix>
+  PUBLIC__app__commerce__api__shortCode=<b2c.shortcode>
+  PUBLIC__app__commerce__api__privateKeyEnabled=true
+  COMMERCE_API_SLAS_SECRET=<slas client_secret>
+  PUBLIC__app__defaultSiteId=<b2c.site_id>
+  ```
 - **Output to persist:** `sfn.target_repo_path` (the local clone/path) — this
   feeds steps 7 and 9.
 - Validate `pnpm dev` boots and connects to the sandbox before marking `done`.
+
+> **🩺 Troubleshooting "Access token is invalid or revoked" (during dev /
+> step 6 visual checkpoint).** This is the #1 symptom of a misconfigured
+> `.env`. Diagnose in this order — **do NOT ask the user to touch BM /
+> redirect URIs until the first three checks fail**:
+> 1. **Env var name mismatch.** Open `.env` and confirm the keys are the
+>    canonical SFN names listed above. Older intakes wrote `SLAS_CLIENT_ID` /
+>    `SLAS_CLIENT_SECRET`, which the runtime silently ignores. If wrong, fix
+>    the `.env`, restart `pnpm dev`, retry.
+> 2. **Raw SLAS curl** (uses the same creds the runtime would, bypasses the
+>    framework). Token must come back:
+>    ```bash
+>    curl -sS -X POST "https://${PUBLIC__app__commerce__api__shortCode}.api.commercecloud.salesforce.com/shopper/auth/v1/organizations/${SLAS_TENANT_ID}/oauth2/token" \
+>      -u "${PUBLIC__app__commerce__api__clientId}:${COMMERCE_API_SLAS_SECRET}" \
+>      -H "Content-Type: application/x-www-form-urlencoded" \
+>      -d "grant_type=client_credentials&channel_id=${PUBLIC__app__defaultSiteId}"
+>    ```
+>    If you get `200` + access_token, the creds and channel are fine — the
+>    problem is purely on the runtime side (env-var wiring, restart, port).
+> 3. **Restart vs reload.** Vite / sfnext picks `.env` up at process start.
+>    After editing `.env`, kill `pnpm dev` and restart — a browser reload is
+>    not enough.
+> 4. **Only if the curl returns `unauthorized_client` / `invalid_client`**:
+>    the SLAS client itself is misconfigured. Then (and only then) the user
+>    must open the SLAS Admin UI in BM → Site Development → SCAPI Settings
+>    → SLAS → Manage Clients → the client-id → check that the **channel**
+>    (`site_id`) is enabled and, for browser flows, that the redirect URI
+>    list includes `http://localhost:5173/callback` plus the MRT
+>    `https://*.mobify.com/callback`. The agent should not require these
+>    just to serve guest-token requests — only for SLAS-public OAuth flows.
+>
+> The failure mode the user hit (May 2026, sandbox `zzse-047`) was check #1:
+> `.env` had `SLAS_CLIENT_SECRET=…` but the runtime expects
+> `COMMERCE_API_SLAS_SECRET=…`. Fixed in 0.1.3 by writing the canonical
+> names from the step-1 intake.
 
 ### Step 6 — [IA] Branding + content `6_branding` → skill `dsp-sfn-demo-branding`
 Continue with **`dsp-sfn-demo-branding`** to do the *creative* part for

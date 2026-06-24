@@ -32,7 +32,11 @@ keep asking for things. **Captures (4 groups in a single intake):**
   values never enter state.
 - **C. SLAS** — `slas.tenant_id` (org_id without `f_ecom_` typically); raw
   client_id/secret go into env vars / SFN `.env`, state holds the names in
-  `slas.client_id_secret` / `slas.client_secret_secret`.
+  `slas.client_id_secret` / `slas.client_secret_secret`. **Default to the
+  canonical SFN runtime names** (`PUBLIC__app__commerce__api__clientId` and
+  `COMMERCE_API_SLAS_SECRET`); legacy `SLAS_CLIENT_ID`/`SLAS_CLIENT_SECRET`
+  are silently ignored by the runtime and produce "Access token is invalid
+  or revoked" in step 6 even when raw curl succeeds.
 - **D. MRT** (optional, can be deferred until step 11) — `sfn.mrt_project`,
   `sfn.mrt_environment`, `~/.mobify` API key (sets
   `sfn.mrt_credentials_ready`).
