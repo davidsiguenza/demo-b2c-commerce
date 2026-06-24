@@ -128,6 +128,26 @@ b) **Download real assets** from the customer's CDN to
    ```
    Update `content.ts` `imageUrl` fields to `/images/brands/<id>/<filename>`.
 
+   > **⚠ MRT asset paths need `resolveAssetUrl()` — dev hides this bug.**
+   > In `pnpm dev` the server serves `/images/...` from the repo root, so
+   > raw paths like `/images/brands/<id>/logo.svg` work. In MRT (after
+   > `npm run push`) the bundle's static assets are served under
+   > `/mobify/bundle/<bundleId>/`, and a raw `/images/...` returns 404 —
+   > the demo deploys "successfully" with a broken logo. Any
+   > component that takes a brand asset path **must** wrap it in
+   > `resolveAssetUrl()` from `@/lib/utils`:
+   > ```tsx
+   > import { resolveAssetUrl } from '@/lib/utils';
+   > // ...
+   > <img src={resolveAssetUrl(brand.logo.src)} ... />
+   > ```
+   > Audit at minimum: `branded-logo.tsx`, `branded-footer-logo.tsx`,
+   > and any custom `<img src={brand.…}>` in the brand template. Bug
+   > seen on `zzse-047` (nto): header/footer logos rendered raw paths
+   > and MRT 404'd them while dev was green. Step 6 of the master
+   > orchestrator's visual checkpoint catches this only if you preview
+   > the **MRT** URL, not just `localhost`.
+
    **Asset-selection rules (prevent the common defects up front):**
    - **Hero images must be text-free.** The hero component overlays its own
      title/subtitle/CTA, so a background that already contains words produces

@@ -759,6 +759,18 @@ Two parts:
    `done`. **The push alone is not done** — done means the public URL
    serves the client's brand.
 
+4. **Live URL audit (not just dev).** Open the MRT bundle URL and check
+   things that `pnpm dev` cannot catch:
+   - Header/footer **logo renders** (not 404 — dev serves `/images/...`
+     from root but MRT serves from `/mobify/bundle/<id>/`, so any
+     `<img src>` of a brand asset that didn't go through
+     `resolveAssetUrl()` will 404 here while dev was green).
+   - Hero/featured-card images load.
+   - Branding (logo + colours + copy) matches the `activeClient`, not a
+     ghost brand from a previous environment (validates sub-step 3).
+   If any of these fail, fix in source, re-push, re-deploy. Don't mark
+   `done` based on the dev preview from step 6.
+
 Mark `done`. Print the final summary: storefront URL, catalog status, MRT
 bundle. The demo is ready.
 
