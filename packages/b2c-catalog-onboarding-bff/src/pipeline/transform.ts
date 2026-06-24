@@ -123,8 +123,15 @@ export async function transformCatalogUpload(args: {
         }
     }
 
-    // 2) Discover existing storefront top-level categories (depth 2)
-    const storefrontRoot = await getCategory(config, storefrontCatalogId, 'root', 2);
+    // 2) Discover existing storefront top-level categories (depth 2).
+    // If the catalog doesn't exist yet (new import) the Data API returns 403/404 —
+    // treat that as an empty tree so all categories are materialised as new.
+    let storefrontRoot: { id: string; categories?: Array<{ id: string; categories?: unknown[] }> };
+    try {
+        storefrontRoot = await getCategory(config, storefrontCatalogId, 'root', 2);
+    } catch {
+        storefrontRoot = { id: 'root', categories: [] };
+    }
     const existingStorefrontIds = new Set<string>();
     walkCategoryTree(storefrontRoot, (id) => existingStorefrontIds.add(id));
 
@@ -140,20 +147,37 @@ export async function transformCatalogUpload(args: {
     const masterCatalogXmlPath = join(transformedRoot, 'catalogs', targetCatalogId, 'catalog.xml');
     await writeFile(masterCatalogXmlPath, withDeclaration(xmlBuilder.build(tree)), 'utf8');
 
-    // 4) Build storefront delta
+    // 4) Build storefront delta (or enrich master in-place when catalogs are the same).
     let assignmentsPublished = 0;
     let storefrontDeltaXmlPath: string | null = null;
 
-    if (newCategoryIds.length > 0 || assignmentsByCategoryId.size > 0) {
+    for (const [, pids] of assignmentsByCategoryId) assignmentsPublished += pids.length;
+
+    if (storefrontCatalogId === targetCatalogId) {
+        // Single-catalog mode: master IS the storefront catalog. Patch showInMenu onto
+        // new category nodes in the already-parsed tree and re-write the master.
+        // Do NOT write a separate delta — that would overwrite the products in the master.
+        // The master already carries <category>, <product>, and <category-assignment> elements.
+        if (newCategoryIds.length > 0) {
+            const sourceCatNodes = collectCategoryNodes(catalogNode.catalog as PreservedNode[]);
+            for (const id of newCategoryIds) {
+                const catNode = sourceCatNodes.get(id);
+                if (!catNode) continue;
+                const inner = (catNode.category as PreservedNode[]) ?? [];
+                ensureParentRoot(inner);
+                ensureShowInMenu(inner);
+                catNode.category = inner;
+            }
+            await writeFile(masterCatalogXmlPath, withDeclaration(xmlBuilder.build(tree)), 'utf8');
+        }
+        storefrontDeltaXmlPath = null;
+    } else if (newCategoryIds.length > 0 || assignmentsByCategoryId.size > 0) {
         const deltaTree = buildStorefrontDelta({
             storefrontCatalogId,
             newCategoryIds,
             sourceCategoryNodes: collectCategoryNodes(catalogNode.catalog as PreservedNode[]),
             assignmentsByCategoryId,
         });
-        for (const [, pids] of assignmentsByCategoryId) {
-            assignmentsPublished += pids.length;
-        }
         await mkdir(join(transformedRoot, 'catalogs', storefrontCatalogId), {
             recursive: true,
         });

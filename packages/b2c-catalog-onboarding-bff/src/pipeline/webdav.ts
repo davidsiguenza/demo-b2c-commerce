@@ -1,6 +1,4 @@
-import { createReadStream } from 'node:fs';
-import { stat } from 'node:fs/promises';
-import { Readable } from 'node:stream';
+import { readFile, stat } from 'node:fs/promises';
 import type { Config } from '@/lib/config';
 import { recordApiCall, redactHeaders, truncateBody } from '@/lib/api-trace';
 
@@ -32,7 +30,7 @@ export async function uploadToImpex(args: {
     )}`;
     const auth = Buffer.from(`${config.webdavUser}:${config.webdavPassword}`).toString('base64');
 
-    const stream = createReadStream(localPath);
+    const fileBuffer = await readFile(localPath);
     const requestHeaders = {
         Authorization: `Basic ${auth}`,
         'Content-Type': 'application/zip',
@@ -44,9 +42,8 @@ export async function uploadToImpex(args: {
     const res = await fetch(url, {
         method: 'PUT',
         headers: requestHeaders,
-        body: Readable.toWeb(stream) as ReadableStream,
-        duplex: 'half',
-    } as RequestInit & { duplex: 'half' });
+        body: fileBuffer,
+    });
 
     const responseText = await res.text();
 
