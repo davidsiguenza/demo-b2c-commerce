@@ -78,6 +78,12 @@ Helpers live in `scripts/lib/state.mjs` (zero-dep). Schema:
    - **Toolkit CLI linked?** `sfn-toolkit --version` (needed for steps 5–9).
    - **BFF deps installed?** `test -d <repo>/packages/b2c-catalog-onboarding-bff/node_modules`
      (needed for steps 10–11).
+   - **MRT auth** (needed for step 11 only — re-check right before the push,
+     not at flow start). The MRT push requires a per-user OAuth token from
+     `sfnext login`. There's no offline way to verify — `pnpm exec sfnext whoami`
+     returns the logged-in user or errors. Defer this check until just before
+     step 11; if not logged in, instruct the user to run
+     `pnpm exec sfnext login` in the SFN repo (browser flow) and pause.
 
    Then act on the result:
    - Everything present → say so in one line ("Entorno listo: marketplace +
@@ -354,6 +360,18 @@ Two parts:
    the resulting bundle/deployment URL into the step `note`. **Always runs**,
    regardless of whether catalog/PD steps were skipped — this is the final
    deliverable.
+
+   > **⚠ MRT auth is interactive — do this BEFORE the push, not after a 401.**
+   > The push requires a per-user OAuth token from Managed Runtime. Check first:
+   > ```bash
+   > cd <sfn.target_repo_path> && pnpm exec sfnext whoami
+   > ```
+   > - If it prints a user → proceed to the push.
+   > - If it errors / says "not logged in" → instruct the user to run
+   >   `pnpm exec sfnext login` in the SFN repo (opens a browser OAuth flow,
+   >   per-user, cannot be automated). Pause until they confirm login is done,
+   >   then proceed. Persist `mrt.authenticated_user` in state once verified
+   >   so a resume doesn't re-prompt unnecessarily.
 
 Mark `done`. Print the final summary: storefront URL, catalog status, MRT
 bundle. The demo is ready.

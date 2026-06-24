@@ -121,11 +121,13 @@ then reindex (step 11).
 ### 11. Reindex + push to MRT `11_reindex_push` → `b2c-catalog-onboarding` ⚠
 **Hard gate** (outward-facing). 1) Trigger `SearchReindex` and verify it ran so
 the storefront sees the catalog — **skip this sub-step if step 10 was skipped**
-(placeholder catalog is already indexed). 2) In `sfn.target_repo_path`, push to
-Managed Runtime (`npm run push`) for `sfn.mrt_project`; capture the
-bundle/deploy URL. **The MRT push always runs**, regardless of whether
-PD/catalog steps were skipped — this is the final deliverable.
-Print the final summary: storefront URL, catalog status, MRT bundle.
+(placeholder catalog is already indexed). 2) **Verify MRT auth FIRST** with
+`pnpm exec sfnext whoami` in `sfn.target_repo_path`; if not logged in, ask the
+user to run `pnpm exec sfnext login` (browser OAuth, per-user, interactive)
+and pause until done. Then push to Managed Runtime (`npm run push`) for
+`sfn.mrt_project`; capture the bundle/deploy URL. **The MRT push always runs**,
+regardless of whether PD/catalog steps were skipped — this is the final
+deliverable. Print the final summary: storefront URL, catalog status, MRT bundle.
 
 ---
 
