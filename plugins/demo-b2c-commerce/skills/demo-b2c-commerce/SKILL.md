@@ -48,6 +48,48 @@ the user before starting the next step.
 
 ---
 
+## Where every piece of data lives — Stores
+
+Step 1 is the **only** point where the user pastes credentials. Every later
+step **reads from a known store**; it does NOT re-prompt. If the agent ever
+finds itself about to ask the user for something, it MUST first check these
+stores in order:
+
+| Data | Store | Path | Created |
+|---|---|---|---|
+| Non-secret IDs (client, b2c, slas tenant, sfn config) | demo-state.json | `./demo-state.json` (gitignored) | step 1 (incremental) |
+| dw.json credentials (BM user, AM client id+secret, WebDAV password, tenant) | dw.json | `b2c.dw_json_path` (chmod 600, gitignored) | step 1 |
+| Raw SLAS client_id + client_secret | secrets env file | `./.demo-secrets.env` (chmod 600, gitignored) | step 1 |
+| MRT API key | mobify creds | `~/.mobify` (chmod 600) | step 1 if user provided, else step 11 |
+| SFN runtime config | repo `.env` | `<sfn.target_repo_path>/.env` (gitignored) | step 5 (written from secrets store) |
+
+**The rule: "consult stores before asking the user."** Before invoking
+`AskUserQuestion` for ANY value in steps 2–11, run this lookup:
+```bash
+# 1. state — non-secret IDs
+jq -r '.<path>' demo-state.json
+# 2. dw.json — BM/AM/WebDAV
+jq -r '.<key>' "$(jq -r .b2c.dw_json_path demo-state.json)"
+# 3. .demo-secrets.env — raw SLAS secrets
+grep -E '^<NAME>=' .demo-secrets.env | cut -d= -f2-
+# 4. ~/.mobify — MRT auth
+jq -r '.<key>' ~/.mobify
+```
+If found, use it silently. Only if **none** of the stores has the value do
+you ask the user — and in that case the question is a bug in step 1's
+intake: persist the new field there so it never gets re-asked.
+
+`.demo-secrets.env` is the SLAS pair. It exists so steps 4 (verify) and 5
+(SFN `.env` bootstrap) don't have to re-ask after a fresh shell:
+```bash
+# .demo-secrets.env (chmod 600, in .gitignore)
+PUBLIC__app__commerce__api__clientId=<raw client_id>
+COMMERCE_API_SLAS_SECRET=<raw client_secret>
+```
+Source it with `set -a; . .demo-secrets.env; set +a` when needed.
+
+---
+
 ## State file — `demo-state.json`
 
 The flow is driven by `demo-state.json` in the **current working directory**.
@@ -191,14 +233,25 @@ and persists only `b2c.dw_json_path`:
 ```
 chmod 600.
 
-**C — SLAS credentials** (raw values into the SFN repo `.env` when step 5
-clones it; until then keep in env vars):
+**C — SLAS credentials**:
 - SLAS `tenant_id` (typically `b2c.organization_id` without the `f_ecom_`
   prefix — confirm with the user)
 - SLAS `client_id` + `client_secret` (created in the SLAS Admin UI)
 
-→ Persist only the **env var names** in `slas.client_id_secret` /
-`slas.client_secret_secret`. Don't write raw secrets to `demo-state.json`.
+→ The agent **immediately writes the two raw secrets to `.demo-secrets.env`**
+in the demo working dir (chmod 600, gitignored) using the canonical SFN
+runtime names. Step 5 sources this file directly to bootstrap the SFN
+`.env` — the user is never re-prompted:
+```bash
+# .demo-secrets.env (created by step 1 — chmod 600, in .gitignore)
+PUBLIC__app__commerce__api__clientId=<raw client_id>
+COMMERCE_API_SLAS_SECRET=<raw client_secret>
+```
+→ In `demo-state.json` persist only the **names**:
+`slas.client_id_secret = "PUBLIC__app__commerce__api__clientId"`,
+`slas.client_secret_secret = "COMMERCE_API_SLAS_SECRET"`, plus
+`slas.tenant_id` and `slas.secrets_file = ".demo-secrets.env"` so resumes
+know where to look.
 
 > **⚠ Canonical env var names (SFN runtime expects these exact keys).**
 > When step 5 writes `.env`, the SFN runtime reads the SLAS client id from
@@ -227,10 +280,14 @@ clones it; until then keep in env vars):
 - `sfn.mrt_environment` — the **environment slug** (also from the URL —
   e.g. `dsp-sfn-zz-30419ec8`), not the env's display name. Default to
   `production` only if the project has just one env.
-- `~/.mobify` API key. If the user already has it set up, mark
-  `sfn.mrt_credentials_ready: true`. If not, give the link
-  https://runtime.commercecloud.com → Account Settings → API Keys, and
-  write `~/.mobify` (chmod 600) with `{ "username": "<email>", "api_key": "<k>" }`.
+- `~/.mobify` API key. Three cases:
+  - File already exists with `username` + `api_key` → mark
+    `sfn.mrt_credentials_ready: true`, don't ask again.
+  - User provides the key now → agent **writes `~/.mobify`
+    immediately** (chmod 600, `{ "username": "<email>", "api_key": "<k>" }`)
+    and marks `mrt_credentials_ready: true`. Step 11 will not re-prompt.
+  - User defers ("lo haré antes de pushar") → mark `false`. Step 11
+    blocks and re-asks **only at that point**, not earlier.
 
 **Validation before marking done.** Run these end-to-end — they tell you the
 intake is complete and step 4b will succeed without further user prompts:
@@ -293,17 +350,15 @@ re-ask the user unless something is missing.
 Verify:
 - `slas.tenant_id` is populated (default = `b2c.organization_id` minus the
   `f_ecom_` prefix; confirm with the user if it differs).
-- The env vars named in `slas.client_id_secret` / `slas.client_secret_secret`
-  resolve in the current shell. Quick check (uses the names from state — do
-  NOT hard-code, the canonical pair is
-  `PUBLIC__app__commerce__api__clientId` + `COMMERCE_API_SLAS_SECRET`):
+- The raw SLAS secrets live in `.demo-secrets.env` (written by step 1).
+  Source it and confirm both names from `slas.{client_id,client_secret}_secret`
+  resolve — **no user interaction**:
   ```bash
+  set -a; . "$(jq -r .slas.secrets_file demo-state.json)"; set +a
   CID_NAME=$(jq -r '.slas.client_id_secret' demo-state.json)
   CSEC_NAME=$(jq -r '.slas.client_secret_secret' demo-state.json)
   test -n "${!CID_NAME:-}" && test -n "${!CSEC_NAME:-}" && echo OK
   ```
-- If the variable names came in via a `.env` file the user pasted, source it
-  before checking.
 - **Live SLAS curl** — prove the creds actually mint a token before declaring
   step 4 done. Saves debugging step 5 / step 6 later:
   ```bash
@@ -437,9 +492,11 @@ source and wire it to the sandbox site using the SLAS credentials.
   documents. If `upgrade-check` reports drift, **stop** and surface it — don't
   force-apply on an unsupported version (especially likely with a pinned ref or
   a pre-existing local repo).
-- Bootstrap `.env` (use `--inherit-env` if the user has an existing working
-  `.env`, else fill from the SLAS creds collected in step 4). **The keys
-  must be the canonical SFN names**, not the legacy `SLAS_*` aliases:
+- Bootstrap `.env` **non-interactively** — read raw SLAS secrets from
+  `.demo-secrets.env` (path in `slas.secrets_file`) and all other values
+  from `demo-state.json` / `dw.json`. **Never re-prompt the user here** —
+  if any value is missing, that's a bug in step 1's intake; fix it there.
+  The keys must be the canonical SFN names:
   ```bash
   PUBLIC__app__commerce__api__clientId=<slas client_id>
   PUBLIC__app__commerce__api__organizationId=<b2c.organization_id, with f_ecom_ prefix>

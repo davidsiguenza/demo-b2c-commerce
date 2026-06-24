@@ -16,7 +16,8 @@
   "slas": {
     "tenant_id": "",
     "client_id_secret": "PUBLIC__app__commerce__api__clientId",
-    "client_secret_secret": "COMMERCE_API_SLAS_SECRET"
+    "client_secret_secret": "COMMERCE_API_SLAS_SECRET",
+    "secrets_file": ".demo-secrets.env"
   },
   "sfn": {
     "template_source": { "kind": "official-latest" },

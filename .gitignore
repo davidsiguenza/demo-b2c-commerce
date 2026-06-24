@@ -10,6 +10,8 @@ packages/*/node_modules/
 .env
 .env.local
 *.local
+.demo-secrets.env
+dw.json
 
 # OS / editor
 .DS_Store

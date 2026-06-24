@@ -37,7 +37,8 @@
       "properties": {
         "tenant_id": { "type": "string", "description": "SLAS tenant = the Organization ID at BM -> Administration -> Site Development -> Salesforce Commerce API Settings, usually without the f_ecom_ prefix (e.g. zzse_262)" },
         "client_id_secret": { "type": "string", "description": "NAME of the SLAS client id env var — never the raw value. Default to the canonical SFN runtime key 'PUBLIC__app__commerce__api__clientId' so step 5's .env bootstrap matches what the SFN template reads at boot. Legacy 'SLAS_CLIENT_ID' is silently ignored by the runtime." },
-        "client_secret_secret": { "type": "string", "description": "NAME of the SLAS client secret env var — never the raw value. Default to the canonical SFN runtime key 'COMMERCE_API_SLAS_SECRET'. Legacy 'SLAS_CLIENT_SECRET' causes 'Access token is invalid or revoked' at runtime even when raw curl succeeds." }
+        "client_secret_secret": { "type": "string", "description": "NAME of the SLAS client secret env var — never the raw value. Default to the canonical SFN runtime key 'COMMERCE_API_SLAS_SECRET'. Legacy 'SLAS_CLIENT_SECRET' causes 'Access token is invalid or revoked' at runtime even when raw curl succeeds." },
+        "secrets_file": { "type": "string", "description": "Path (relative or absolute) to the gitignored env file written by step 1 that holds the raw SLAS client_id and client_secret under their canonical env-var names. Steps 4 and 5 source this file instead of re-prompting the user. Default: '.demo-secrets.env' in the demo working dir." }
       }
     },
     "sfn": {
