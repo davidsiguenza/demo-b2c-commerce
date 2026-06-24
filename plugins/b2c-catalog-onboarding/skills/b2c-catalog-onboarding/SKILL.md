@@ -225,3 +225,21 @@ last-minute demo tweaks without a re-import.
   `{markup, source}` object form on write, not bare strings.
 - **`brand` + `manufacturer-name`** populate standard attributes used for
   refinement — no custom attributes required.
+- **Single-catalog mode (master == storefront) needs special handling in
+  `transform.ts`.** When `STOREFRONT_CATALOG_ID === targetCatalogId` (the
+  common case after the step-2/step-10 fix: one brand-named catalog for
+  master AND storefront) the pipeline must NOT write a separate storefront
+  delta — the delta only contains `<category>` + `<category-assignment>`
+  and would overwrite the master XML that already holds `<product>` rows.
+  Fixed in `5415caa` (Jun 2026); symptom was "import OK, 0 products, 26x
+  'Category Assignment: <sku>: Product does not exist. Skipping.'". If you
+  refactor `transform.ts`, keep the `storefrontCatalogId === targetCatalogId`
+  branch that patches `showInMenu` in-place and skips delta emission.
+- **Data API 403/404 on a brand-new catalog is expected.** `getCategory` for
+  the storefront root fails before the first import materializes the
+  catalog. Treat the error as "empty tree" so every category enters as new;
+  don't surface it as a pipeline failure.
+- **WebDAV PUT uses a full buffer, not a stream.** Node's native `fetch` with
+  a Web `ReadableStream` body and `duplex: 'half'` was unreliable against
+  the Impex endpoint. The pipeline reads the ZIP into a `Buffer` and PUTs
+  that — fine for demo-scale archives (a few MB).
