@@ -52,6 +52,20 @@ the SLAS Admin UI. **Secret hygiene:** raw id/secret go into env vars / the SFN
 `.env`; only their **names** are stored in `slas.client_id_secret` /
 `slas.client_secret_secret`.
 
+### 4b. Phase-B preflight — Sandbox autonomy setup `4b_ai_access` *(one-time per sandbox)*
+Before invoking step 5, the AI client needs read/write access to the sandbox
+or every later step fails with "Access to resource isn't allowed". Three
+sub-steps the user does once: (1) **`dw.json`** at the repo root with hostname,
+client-id/secret, BM user/password, short-code, tenant-id; (2) **Account
+Manager scopes** on that API client — `sfcc.products`, `sfcc.sites`,
+`sfcc.jobs`, `sfcc.orders`, `sfcc.customerlists` (the default is just `mail`);
+(3) **OCAPI Data API Settings** in BM (Site Development → Open Commerce API
+Settings → Data) adding the client-id with resources `/sites`, `/sites/**`,
+`/jobs/*/executions[/*]`, `/catalogs`, `/catalogs/**` (methods `get/post/put/
+patch/delete`, attrs `(**)`). Verify with `b2c sites list` + `b2c bm whoami`.
+Persist `b2c.access_setup_done: true`. **Demo sandbox only** — never propose
+`(**)` on a customer prod org.
+
 ---
 
 ## Phase B — AI builds the storefront (steps 5–8)

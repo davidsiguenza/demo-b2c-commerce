@@ -78,6 +78,12 @@ Helpers live in `scripts/lib/state.mjs` (zero-dep). Schema:
    - **Toolkit CLI linked?** `sfn-toolkit --version` (needed for steps 5–9).
    - **BFF deps installed?** `test -d <repo>/packages/b2c-catalog-onboarding-bff/node_modules`
      (needed for steps 10–11).
+   - **Sandbox AI access?** (needed for any AI step that touches the sandbox,
+     i.e. steps 5+). Check `b2c.access_setup_done` in state; if absent or
+     false, run `b2c sites list` and `b2c bm whoami` once when reaching step 4b
+     — both must succeed. If they fail with "Access to resource isn't allowed"
+     the API client lacks scopes / OCAPI Data Settings. See the Phase-B
+     preflight block (between steps 4 and 5) for the full setup.
    - **MRT auth** (needed for step 11 only — re-check right before the push,
      not at flow start). `sfnext` reads MRT credentials from `~/.mobify`
      (default), a `--credentials-file <path>` flag, or `--api-key <key>`.
@@ -180,6 +186,88 @@ to the sandbox. Collect:
 > (or place them in the SFN repo `.env`), and store only the **names** in
 > `slas.client_id_secret` / `slas.client_secret_secret`. Confirm you can read
 > the env vars; then `done`.
+
+---
+
+### Phase-B preflight — Sandbox autonomy setup `4b_ai_access` *(one-time per sandbox)*
+
+> **The handoff point.** Steps 1–4 are user-owned. Steps 5+ are AI-owned and
+> hit the sandbox via `b2c` CLI, OCAPI Data, WebDAV and SCAPI. **Without this
+> block, every AI step fails with "Access to resource isn't allowed"** —
+> seen first on the Mayoral run (sandbox `zzse-262`, May 2026) and again on
+> every new sandbox until the three sub-steps are done.
+>
+> Run this **before** invoking step 5. Persist `b2c.access_setup_done: true`
+> in state once verified so resumes don't re-prompt.
+
+**Sub-step 1 — `dw.json` at the repo root** (created once, gitignored — the
+sandbox-specific path lives in `b2c.dw_json_path`):
+```json
+{
+  "hostname":      "<shortcode>.dx.commercecloud.salesforce.com",
+  "client-id":     "<api-client-id>",
+  "client-secret": "<api-client-secret>",
+  "username":      "<bm-username>",
+  "password":      "<bm-password>",
+  "short-code":    "<short-code>",
+  "tenant-id":     "<tenant-id>"
+}
+```
+Verify with `b2c setup inspect` — it must show the hostname and credentials.
+
+**Sub-step 2 — Account Manager scopes on the API client.** The user opens
+https://account.demandware.com → API Clients → the client-id from `dw.json` →
+adds these scopes (the defaults ship with only `mail`, which generates a token
+but rejects every operation):
+
+| Scope              | Enables                              |
+|--------------------|--------------------------------------|
+| `sfcc.products`    | Catalogs, products, categories       |
+| `sfcc.sites`       | Site CRUD                            |
+| `sfcc.jobs`        | Triggering import / reindex jobs     |
+| `sfcc.orders`      | Order data (demo customer journeys)  |
+| `sfcc.customerlists` | Customer list ops                  |
+
+For broader demo work also add `sfcc.retailuser` plus a BM administrator role.
+
+Verify the token actually carries the scopes:
+```bash
+b2c auth token | python3 -c "import sys,base64,json; t=sys.stdin.read().strip(); p=t.split('.')[1]+'=='; print(json.loads(base64.urlsafe_b64decode(p))['scope'])"
+```
+Output must list the scopes — not just `['mail']`.
+
+**Sub-step 3 — OCAPI Data API Settings in BM.** BM → Administration → Site
+Development → **Open Commerce API Settings** → **Data** tab → add the API
+client with the resources the flow uses (sites, jobs, catalogs):
+```json
+{
+  "_v": "25.1",
+  "clients": [
+    {
+      "client_id": "<api-client-id>",
+      "resources": [
+        { "resource_id": "/sites",                 "methods": ["get","post","put","patch","delete"], "read_attributes": "(**)", "write_attributes": "(**)" },
+        { "resource_id": "/sites/**",              "methods": ["get","post","put","patch","delete"], "read_attributes": "(**)", "write_attributes": "(**)" },
+        { "resource_id": "/jobs/*/executions",     "methods": ["post"],                              "read_attributes": "(**)", "write_attributes": "(**)" },
+        { "resource_id": "/jobs/*/executions/*",   "methods": ["get"],                               "read_attributes": "(**)", "write_attributes": "(**)" },
+        { "resource_id": "/catalogs",              "methods": ["get","post","put","patch","delete"], "read_attributes": "(**)", "write_attributes": "(**)" },
+        { "resource_id": "/catalogs/**",           "methods": ["get","post","put","patch","delete"], "read_attributes": "(**)", "write_attributes": "(**)" }
+      ]
+    }
+  ]
+}
+```
+
+**Final verification** (run this before marking `4b_ai_access` done):
+```bash
+b2c sites list   # must list the sandbox sites
+b2c bm whoami    # must return BM user info
+```
+
+> **Demo sandbox only.** These broad scopes (`(**)`, all methods) are fine for
+> a SE-owned sandbox where Claude needs autonomy. Never propose this shape on
+> a customer prod org — there it must be principle-of-least-privilege per
+> client-id, audited by the customer's security team.
 
 ---
 
