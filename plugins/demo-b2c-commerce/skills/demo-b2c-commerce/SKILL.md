@@ -121,6 +121,22 @@ Helpers live in `scripts/lib/state.mjs` (zero-dep). Schema:
      re-check right before the step that needs it rather than blocking step 1.
 3. Announce the plan (the 11 steps, who owns each) once, then begin at the
    first pending step.
+4. **Up-front access offer (mandatory).** Right after announcing the plan and
+   confirming the sandbox is reachable, **before asking for any credential**,
+   propose the one-time broad-access setup in BM / Account Manager so the
+   agent can operate autonomously from step 5 onward. Three actions, 5–10 min,
+   pays off immediately: (a) AM scopes on the API client
+   (`sfcc.products`, `sfcc.sites`, `sfcc.jobs`, `sfcc.orders`,
+   `sfcc.customerlists` — defaults only ship `mail`); (b) OCAPI Data API
+   Settings entry for that client_id with the 6 canonical resources from
+   `feedback_b2c_sandbox_setup.md` — `/sites` GET only, `/sites/**` CRUD,
+   `/jobs/*/executions` POST, `/jobs/*/executions/*` GET, `/catalogs` GET,
+   `/catalogs/**` CRUD; (c) WebDAV access — BM → My User → Manage WebDAV
+   Access, ensure role grants it and set a WebDAV password (without this,
+   step 10 upload fails 401). Phrase it as a choice: do all three now and run
+   autonomously, or skip and accept interruptions later. Persist the answer
+   (`b2c.access_setup_done`) so resumes don't re-ask. **Never silently skip
+   this offer** — every past run that skipped it cost 3–5 mid-flow blocks.
 
 > To find the next step deterministically you may run:
 > `node scripts/lib/state.mjs next` (prints the first non-done step + owner).

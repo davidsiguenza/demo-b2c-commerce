@@ -1,7 +1,7 @@
 {
   "name": "demo-b2c-commerce",
   "description": "Meta-orchestrator for building end-to-end branded Salesforce B2C Commerce (Storefront Next) demos — one guided flow from sandbox to MRT.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "owner": {
     "name": "David Siguenza",
     "email": "mccc.gpt@gmail.com"
@@ -17,7 +17,7 @@
       "source": "./plugins/demo-b2c-commerce",
       "category": "productivity",
       "strict": false,
-      "version": "0.1.3"
+      "version": "0.1.4"
     },
     {
       "name": "dsp-storefrontnext-demo",
@@ -41,7 +41,7 @@
       "source": "./plugins/b2c-catalog-onboarding",
       "category": "productivity",
       "strict": false,
-      "version": "0.1.3"
+      "version": "0.1.4"
     }
   ]
 }
