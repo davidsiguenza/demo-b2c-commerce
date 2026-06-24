@@ -176,6 +176,26 @@ c) **Rewrite `src/extensions/branding/clients/<id>/theme.css`** with proper
      (e.g. a `linear-gradient` overlay or a semi-opaque layer) so title,
      subtitle and CTA all pass contrast. Never ship grey-on-grey text or a
      low-contrast CTA link.
+   - **Featured-cards scrim is broken by default — fix it once in every brand.**
+     The base `ContentCard` component puts its `bg-gradient-to-t from-black/70`
+     scrim with class `-z-10`, but the parent has `overflow-hidden` which
+     creates a stacking context, so the gradient ends up *behind* the image
+     and white copy on light photos becomes illegible (most fashion/footwear
+     hero shots are pale). Don't patch the component — promote the scrim
+     above the image from the brand's `theme.css`:
+
+     ```css
+     /* Featured cards: keep the scrim above the image, text above the scrim. */
+     [data-brand='<id>'] .absolute.inset-0.bg-gradient-to-t {
+         z-index: 1 !important;
+     }
+     [data-brand='<id>'] .relative.z-10 {
+         z-index: 2;
+         position: relative;
+     }
+     ```
+     Add this block to every new brand's `theme.css` proactively — don't wait
+     for the QA to flag it.
 
    Always check the brand's **PLP and PDP** visually after — that's where
    incomplete theming bites.
@@ -338,26 +358,35 @@ becomes credible.
    Putting brand color there makes every hover look like an error.
 5. **Logo SVGs already have brand colors** — when overriding the header for
    a brand whose logo isn't black, set `--header-logo-filter: none`.
+6. **Featured-cards scrim is below the image, not above it (template bug).**
+   The base `ContentCard` puts `bg-gradient-to-t from-black/70 -z-10` inside
+   an `overflow-hidden` parent, which creates a stacking context — the
+   negative z-index buries the scrim *behind* the photo and white overlay
+   copy ("Mujer / Hombre / Explorar") becomes invisible on any pale image.
+   Camper run (Jun 2026). Fix in the brand's `theme.css`:
+   `[data-brand='<id>'] .absolute.inset-0.bg-gradient-to-t { z-index: 1 !important; }`
+   plus `[data-brand='<id>'] .relative.z-10 { z-index: 2; position: relative; }`.
+   Apply by default in every brand, not reactively.
 
 ### Catalog phase pitfalls
 
-6. **`site-import` job cannot create sites.** It only writes data to existing
+7. **`site-import` job cannot create sites.** It only writes data to existing
    ones. The user must create the new site in BM first. Don't ship a
    `site.xml` root-level descriptor — it's not a valid input shape.
-7. **Schema is strict, child order matters.** In `<category>`, `<parent>`
+8. **Schema is strict, child order matters.** In `<category>`, `<parent>`
    must come BEFORE `<position>`. In `<product>`, `<available-flag>` doesn't
    exist (only `<online-flag>` and `<searchable-flag>`).
-8. **Inventory `list-id` goes on `<header>`**, not on `<inventory-list>`.
+9. **Inventory `list-id` goes on `<header>`**, not on `<inventory-list>`.
    Inventory `<description>` rejects `xml:lang` (plain text only, unlike
    catalog/pricebook descriptions).
-9. **Storefront catalog and inventory list bindings are NOT in
-   preferences.xml.** They are direct site attributes set in BM after
-   import. Pricebook can go in preferences (under `standard-preferences`
-   `all-instances` `SiteAssignablePriceBooks` and `SiteApplicablePriceBooks`).
-10. **PLPs only preload 1-2 images per product.** To get a real PDP gallery
+10. **Storefront catalog and inventory list bindings are NOT in
+    preferences.xml.** They are direct site attributes set in BM after
+    import. Pricebook can go in preferences (under `standard-preferences`
+    `all-instances` `SiteAssignablePriceBooks` and `SiteApplicablePriceBooks`).
+11. **PLPs only preload 1-2 images per product.** To get a real PDP gallery
     you have to also scrape each PDP. The view numbers are non-contiguous
     (some products only have 4,5,6; others 1,2,3,4,5,6).
-11. **Cloudinary URLs preserve aspect ratio** — pass `f_auto,q_auto,w_<n>`
+12. **Cloudinary URLs preserve aspect ratio** — pass `f_auto,q_auto,w_<n>`
     and you get any width on demand. No need for the original `t_web_plp_750`
     transform; it just locks you to one size.
 
