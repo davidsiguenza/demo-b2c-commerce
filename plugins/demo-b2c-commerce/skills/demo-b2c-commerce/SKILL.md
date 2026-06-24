@@ -725,6 +725,40 @@ Two parts:
    > Persist `mrt.credentials_verified: true` in state once a push succeeds so
    > a resume doesn't re-prompt unnecessarily.
 
+3. **MRT environment variables (manual, mandatory).** The `.env` of the SFN
+   repo **does NOT travel with the bundle** — `npm run push` ships compiled
+   code that reads `PUBLIC__*` from `process.env` at runtime, and the only
+   default baked in is `activeClient: "default"`. If the MRT environment was
+   cloned/inherited from a previous demo, it carries the **previous** brand's
+   env vars and the bundle will deploy successfully but serve the wrong logo,
+   colours and copy (seen on `zzse-047`: bundle 2 live, SCAPI pointed at
+   ntoNext correctly, but UI showed "Market Street" because
+   `PUBLIC__app__global__branding__activeClient` was still the old value).
+
+   The MRT env vars API is **not** writable with personal API keys (404s
+   across endpoints) — the user must do this in the UI. After the push,
+   tell the user explicitly:
+   > Open **Runtime Admin → `<sfn.mrt_project>` → environment
+   > `<sfn.mrt_environment>` → Environment Variables** and paste the
+   > non-secret `PUBLIC__*` keys plus `COMMERCE_API_SLAS_SECRET` from the
+   > local `.env`. At minimum:
+   > - `PUBLIC__app__global__branding__activeClient`
+   > - `PUBLIC__app__commerce__api__clientId`
+   > - `PUBLIC__app__commerce__api__organizationId`
+   > - `PUBLIC__app__commerce__api__shortCode`
+   > - `PUBLIC__app__defaultSiteId`
+   > - `PUBLIC__app__commerce__sites`
+   > - `COMMERCE_API_SLAS_SECRET`
+   >
+   > Then click **Redeploy** on the latest bundle (env vars are read at
+   > server boot, so they only take effect after a redeploy — not on save).
+
+   Print the bundle URL and the exact values to paste (read from
+   `<sfn.target_repo_path>/.env`). Wait for confirmation that the redeploy
+   completed and the live site shows the correct brand before marking
+   `done`. **The push alone is not done** — done means the public URL
+   serves the client's brand.
+
 Mark `done`. Print the final summary: storefront URL, catalog status, MRT
 bundle. The demo is ready.
 
