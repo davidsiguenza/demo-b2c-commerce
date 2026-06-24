@@ -216,10 +216,17 @@ clones it; until then keep in env vars):
 > ```
 
 **D — Managed Runtime** (used in step 11 — optional now, can be deferred):
-- `sfn.mrt_project` slug (leave empty if the project doesn't exist yet —
-  it's created on first push)
-- `sfn.mrt_environment` (`staging` / `production` / `preview`, default
-  `production` if unsure)
+- `sfn.mrt_project` — **the Project ID, NOT the display name.** The MRT UI
+  shows a human-friendly name (e.g. `dsp-sfn-zzse-047-nto`) at the top of
+  the project page, but the CLI / `mobify.config.json` need the **Project
+  ID** (e.g. `dsp-sfn-zzse-6cf4b4`) shown in the project's URL or under
+  Settings. Pushing with the display name fails with a 404 or "project not
+  found". When asking the user, say literally "Project **ID** (no el
+  nombre que ves arriba; el slug de la URL)". Leave empty only if the
+  project doesn't exist yet — it's created on first push.
+- `sfn.mrt_environment` — the **environment slug** (also from the URL —
+  e.g. `dsp-sfn-zz-30419ec8`), not the env's display name. Default to
+  `production` only if the project has just one env.
 - `~/.mobify` API key. If the user already has it set up, mark
   `sfn.mrt_credentials_ready: true`. If not, give the link
   https://runtime.commercecloud.com → Account Settings → API Keys, and
@@ -628,6 +635,16 @@ Two parts:
    the resulting bundle/deployment URL into the step `note`. **Always runs**,
    regardless of whether catalog/PD steps were skipped — this is the final
    deliverable.
+
+   > **⚠ Project ID ≠ project display name.** Before pushing, verify
+   > `sfn.mrt_project` is the **Project ID** (URL slug, e.g.
+   > `dsp-sfn-zzse-6cf4b4`), NOT the friendly name shown at the top of the
+   > MRT page (e.g. `dsp-sfn-zzse-047-nto`). The CLI looks the project up
+   > by ID; the display name produces a misleading 404 / "project not
+   > found". Same gotcha for `sfn.mrt_environment` — use the env slug from
+   > the URL (e.g. `dsp-sfn-zz-30419ec8`), not its label. If unsure, send
+   > the user to the project URL in MRT and read the slug from there.
+   > Update state with the corrected IDs before retrying.
 
    > **⚠ MRT auth is file-based — verify BEFORE the push, not after a 401.**
    > The push reads credentials from `~/.mobify` by default (or `--api-key` /
